@@ -35,7 +35,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 	SessionFactory sf;
 
 	@Override
-	public boolean savePunchIn(String reffId) {
+	public boolean savePunchIn(String reffId, String pbId) {
 	    Date date = new Date();  
 		Session session = sf.openSession();
 		try {
@@ -66,7 +66,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 	        	punchSlot = "Invalid Punch";
 	        }
 		
-			session.save(new Punch_xref(new RfId(reffId),date,date,date,true,punchSlot));
+			session.save(new Punch_xref(new RfId(reffId),date,date,date,true,punchSlot,pbId));
 		
 			session.getTransaction().commit();
 			
@@ -251,11 +251,11 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			   DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy");  
 			   LocalDateTime now = LocalDateTime.now();
 			   if(!emp.equals(null)) {
-				   PunchModel obj = new PunchModel(true,emp.getName()+ " has punched at "+ dtf.format(now));
+				   PunchModel obj = new PunchModel(true,emp.getName()+ " has punched at "+ dtf.format(now),emp.getPbId());
 				   return obj;
 			   }
 			   else {
-				   return new PunchModel(false,"Please try again");
+				   return new PunchModel(false,"Please try again","");
 			   }
 			
 			
@@ -399,7 +399,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 	@Override
 	public boolean saveEmployee(Employee emp) {
 		Session session = sf.openSession();
-		
+		emp.setProgramCode(emp.getProgramCode().toLowerCase());
 		try {
 		
 			session.beginTransaction();
@@ -618,4 +618,36 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		return graphDataList;
 	}
 
+	@Override
+	public String getCandidateByRef(String reff_id) {
+return "";
+
+}
+
+	@Override
+	public List<String> getProgramCodes() {
+		// TODO Auto-generated method stub
+		Session session = sf.openSession();
+		String sql = "SELECT distinct(program_code) FROM employee_table";
+		List<Object[]> rows;
+		List<String> pragramCodes = new ArrayList<String>();
+		 try {
+	        	
+	        	session.beginTransaction();
+	        	SQLQuery query = session.createSQLQuery(sql.toString());
+			rows = query.list();
+			session.getTransaction().commit();
+			for(Object row : rows){
+				pragramCodes.add(row.toString());
+			}
+		 }
+		 catch(Exception ex)
+		 {
+			 
+		 }
+		 finally {
+			 session.close();
+		 }
+		return pragramCodes;
+	}
 }

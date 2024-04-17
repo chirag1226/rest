@@ -16,7 +16,7 @@ public interface AttendanceDao {
 
 	public boolean saveEmployee(Employee emp);
 
-	public boolean savePunchIn(String reffId);
+	public boolean savePunchIn(String reffId, String pbId);
 
 	public List<Punch> getDataByDate(String date);
 
@@ -35,4 +35,8 @@ public interface AttendanceDao {
 	public List<BarGraphData> getBarGraphDataByFilter(Customfilter filter);
 
 	boolean makeEmployeePunchInvalidIfExist(Employee emp);
+
+	public String getCandidateByRef(String reff_id);
+
+	public List<String> getProgramCodes();
 }

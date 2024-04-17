@@ -32,9 +32,9 @@ public class AttendanceServiceImpl implements AttendanceService {
 	}
 
 	@Override
-	public boolean savepunchIn(String reffId) {
+	public boolean savepunchIn(String reffId, String pbId) {
 		// TODO Auto-generated method stub
-		return dao.savePunchIn(reffId);
+		return dao.savePunchIn(reffId,pbId);
 	}
 
 	@Override
@@ -88,6 +88,18 @@ public class AttendanceServiceImpl implements AttendanceService {
 	public List<BarGraphData> getBarGraphDataByFilter(Customfilter filter) {
 		// TODO Auto-generated method stub
 		return dao.getBarGraphDataByFilter(filter);
+	}
+
+	@Override
+	public String getCandidateByRef(String reff_id) {
+		// TODO Auto-generated method stub
+		return dao.getCandidateByRef(reff_id);
+	}
+
+	@Override
+	public List<String> getProgramCodes() {
+		// TODO Auto-generated method stub
+		return dao.getProgramCodes();
 	}
 
 

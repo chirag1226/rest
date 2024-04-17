@@ -14,7 +14,7 @@ import com.rest.models.SignUp;
 public interface AttendanceService {
 	
 	
-	public boolean savepunchIn(String reffId);
+	public boolean savepunchIn(String reffId, String pbId);
 
 	public boolean saveEmployee(Employee emp);
 	
@@ -35,5 +35,9 @@ public interface AttendanceService {
 	public List<BarGraphData> getBarGraphDataByFilter(Customfilter filter);
 
 	boolean makeEmployeePunchInvalidIfExist(Employee emp);
+
+	public String getCandidateByRef(String reff_id);
+
+	public List<String> getProgramCodes();
 
 }

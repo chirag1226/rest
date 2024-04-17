@@ -33,8 +33,15 @@ public class Punch_xref {
 	private Date timeStamp;
 	private boolean valid;
 	private String punchSlot;
+	private String pbId;
+	public String getPbId() {
+		return pbId;
+	}
+	public void setPbId(String pbId) {
+		this.pbId = pbId;
+	}
 	public Punch_xref( RfId reffId, Date time, Date date, Date timeStamp, boolean valid,
-			String punchSlot) {
+			String punchSlot,String pbId) {
 		super();
 		this.reffId = reffId;
 		this.time = time;
@@ -42,6 +49,7 @@ public class Punch_xref {
 		this.timeStamp = timeStamp;
 		this.valid = valid;
 		this.punchSlot = punchSlot;
+		this.pbId = pbId;
 	}
 	public String getPunchSlot() {
 		return punchSlot;

@@ -40,6 +40,9 @@ public class HomeController {
 		return this.test();
 	}
 	
+	
+	
+	
 	@CrossOrigin(origins = "*")
 	@PostMapping(value = "addemployee", consumes = "application/json")
 	public boolean punchIn(@RequestBody Employee emp) {
@@ -48,17 +51,26 @@ public class HomeController {
 		
 		return service.saveEmployee(emp);
 	}
+	
+	
+	
+	
 	@CrossOrigin(origins = "*")
 	@PostMapping("{reff_id}")
 	public PunchModel punchIn(@PathVariable String reff_id) {
-		
-		 if(service.savepunchIn(reff_id)) {
-			return service.getPunchData(reff_id);
+		service.getCandidateByRef(reff_id);
+		PunchModel emp = service.getPunchData(reff_id);
+		 if(service.savepunchIn(reff_id,emp.getPbId())) {
+			return emp;
 		}
 		 else {
-			 return new PunchModel(false,"Please try again");
+			 return new PunchModel(false,"Please try again","");
 		 }
 	}
+	
+	
+	
+	
 	@CrossOrigin(origins = "*")
 	@PostMapping(value = "getDataByDate")
 	public List<Punch> getDataByDate(@RequestBody String date)
@@ -172,6 +184,14 @@ public class HomeController {
 		        }
 return objs;
 		    }
+		    
+			@CrossOrigin(origins = "*")
+			@PostMapping(value = "getProgramCodes")
+			public List<String> getProgramCodes()
+
+			{
+				return  service.getProgramCodes();
+			}
 
 
 }

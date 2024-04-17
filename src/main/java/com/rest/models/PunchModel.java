@@ -4,14 +4,22 @@ public class PunchModel {
 
 private boolean flag;
 private String msg;
-public PunchModel(boolean flag, String msg) {
+private String pbId;
+public String getPbId() {
+	return pbId;
+}
+
+public void setPbId(String pbId) {
+	this.pbId = pbId;
+}
+
+public PunchModel(boolean flag, String msg,String pbId) {
 	super();
 	this.flag = flag;
 	this.msg = msg;
+	this.pbId = pbId;
 }
-public PunchModel() {
-	super();
-}
+
 public boolean isFlag() {
 	return flag;
 }
