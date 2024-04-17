@@ -127,7 +127,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
         	
         	if(!filter.isAllData()) {
         
-        sql.append("select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, min(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.is_valid='1' and punch.valid = '1' and emp.reff_id_reff_id = punch.reff_id_reff_id and punch.time>'07:30:00' and punch.time <'09:00:00' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
+        sql.append("select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, min(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'07:30:00' and punch.time <'09:00:00' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
 		
 		if(!filter.getPbId().equals("")) {
 			sql.append(" and t1.pb_id = '"+filter.getPbId()+"'");
@@ -152,7 +152,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		
          sql = new StringBuilder();
         
-        sql.append("select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, min(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.is_valid='1' and punch.valid = '1' and emp.reff_id_reff_id = punch.reff_id_reff_id and punch.time>'12:00:00' and punch.time <'13:30:00' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
+        sql.append("select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, min(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'12:00:00' and punch.time <'13:30:00' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
 		
 		if(!filter.getPbId().equals("")) {
 			sql.append(" and t1.pb_id = '"+filter.getPbId()+"'");
@@ -176,7 +176,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		
          sql = new StringBuilder();
         
-        sql.append("select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, max(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.is_valid='1' and punch.valid = '1' and emp.reff_id_reff_id = punch.reff_id_reff_id and punch.time>'15:30:00' and punch.time <'23:59:59' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
+        sql.append("select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, max(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'15:30:00' and punch.time <'23:59:59' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
 		
 		if(!filter.getPbId().equals("")) {
 			sql.append(" and t1.pb_id = '"+filter.getPbId()+"'");
@@ -201,7 +201,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
         	}
         else {
         	
-        	sql.append("select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.is_valid='1' and punch.valid = '1' and emp.reff_id_reff_id = punch.reff_id_reff_id ) as t2 where t1.pb_id = t2.pb_id_temp ");
+        	sql.append("select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id ) as t2 where t1.pb_id = t2.pb_id_temp ");
     		
     		if(!filter.getPbId().equals("")) {
     			sql.append(" and t1.pb_id = '"+filter.getPbId()+"'");
