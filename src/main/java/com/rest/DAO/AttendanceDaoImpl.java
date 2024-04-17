@@ -22,6 +22,7 @@ import com.rest.models.Customfilter;
 import com.rest.models.Employee;
 import com.rest.models.EmployeeData;
 import com.rest.models.PieGraphData;
+import com.rest.models.ProgramCodes;
 import com.rest.models.Punch;
 import com.rest.models.PunchModel;
 import com.rest.models.Punch_xref;
@@ -625,12 +626,12 @@ return "";
 }
 
 	@Override
-	public List<String> getProgramCodes() {
+	public List<ProgramCodes> getProgramCodes() {
 		// TODO Auto-generated method stub
 		Session session = sf.openSession();
 		String sql = "SELECT distinct(program_code) FROM employee_table";
 		List<Object[]> rows;
-		List<String> pragramCodes = new ArrayList<String>();
+		List<ProgramCodes> pragramCodes = new ArrayList<ProgramCodes>();
 		 try {
 	        	
 	        	session.beginTransaction();
@@ -638,7 +639,7 @@ return "";
 			rows = query.list();
 			session.getTransaction().commit();
 			for(Object row : rows){
-				pragramCodes.add(row.toString());
+				pragramCodes.add(new ProgramCodes(row.toString(),""));
 			}
 		 }
 		 catch(Exception ex)

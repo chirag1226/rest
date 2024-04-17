@@ -7,6 +7,7 @@ import com.rest.models.Customfilter;
 import com.rest.models.Employee;
 import com.rest.models.EmployeeData;
 import com.rest.models.PieGraphData;
+import com.rest.models.ProgramCodes;
 import com.rest.models.Punch;
 import com.rest.models.PunchModel;
 import com.rest.models.SignUp;
@@ -38,6 +39,6 @@ public interface AttendanceService {
 
 	public String getCandidateByRef(String reff_id);
 
-	public List<String> getProgramCodes();
+	public List<ProgramCodes> getProgramCodes();
 
 }

@@ -19,6 +19,7 @@ import com.rest.models.Employee;
 import com.rest.models.EmployeeData;
 import com.rest.models.FileNamePath;
 import com.rest.models.PieGraphData;
+import com.rest.models.ProgramCodes;
 import com.rest.models.Punch;
 import com.rest.models.PunchModel;
 import com.rest.models.SignUp;
@@ -187,7 +188,7 @@ return objs;
 		    
 			@CrossOrigin(origins = "*")
 			@PostMapping(value = "getProgramCodes")
-			public List<String> getProgramCodes()
+			public List<ProgramCodes> getProgramCodes()
 
 			{
 				return  service.getProgramCodes();
