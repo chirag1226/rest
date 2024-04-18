@@ -75,7 +75,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			}
 		catch(Exception ex)
 		{
-			
+			session.getTransaction().rollback();
 		}
 		finally {
 			session.close();
@@ -106,7 +106,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			}
 		catch(Exception ex)
 		{
-			
+			session.getTransaction().rollback();
 		}
 		finally {
 			session.close();
@@ -224,7 +224,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
         }
         }
         catch(Exception ex) {
-        	
+        	session.getTransaction().rollback();
         }
         finally {
         	session.close();
@@ -263,7 +263,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			}
 		catch(Exception ex)
 		{
-			
+			session.getTransaction().rollback();
 			//exception catch
 		}
 		finally {
@@ -290,7 +290,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		}
 		catch(Exception ex)
 		{
-			
+			session.getTransaction().rollback();
 		}
 		finally {
 			session.close();
@@ -316,7 +316,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		}
 		catch(Exception ex)
 		{
-			
+			session.getTransaction().rollback();
 		}
 		finally {
 			session.close();
@@ -331,6 +331,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			messageDigest = MessageDigest.getInstance("SHA-256");
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
+			
 		}
 		messageDigest.update(userRegistrationDto.getPassword().getBytes());
 		String stringHash = new String(messageDigest.digest());
@@ -348,7 +349,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			}
 		catch(Exception ex)
 		{
-			
+			session.getTransaction().rollback();
 		}
 		finally {
 			session.close();
@@ -387,7 +388,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			}
 		catch(Exception ex)
 		{
-			
+			session.getTransaction().rollback();
 			
 		}
 		finally {
@@ -413,6 +414,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			}
 		catch(Exception ex)
 		{
+			session.getTransaction().rollback();
 			try {
 				
 				
@@ -428,7 +430,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 				}
 				catch(Exception ex1)
 				{
-					
+					session.getTransaction().rollback();
 				}
 		}
 		finally {
@@ -471,7 +473,8 @@ public class AttendanceDaoImpl implements AttendanceDao {
 
 		}
 		catch(Exception ex) {
-			System.out.println(ex);		}
+			session.getTransaction().rollback();
+				}
 		finally {
 			session.close();
 		}
@@ -504,7 +507,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 				
 		}
 		catch(Exception ex) {
-			System.out.println(ex);		}
+			session.getTransaction().rollback();	}
 		finally {
 			session.close();
 		}
@@ -609,7 +612,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		graphDataList.add(new BarGraphData("after 3:30pm", employeesData.size()));
         }
         catch(Exception ex) {
-        	
+        	session.getTransaction().rollback();
         }
         finally {
         	session.close();
@@ -644,7 +647,7 @@ return "";
 		 }
 		 catch(Exception ex)
 		 {
-			 
+			 session.getTransaction().rollback();
 		 }
 		 finally {
 			 session.close();
