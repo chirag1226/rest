@@ -71,6 +71,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		
 			session.getTransaction().commit();
 			
+			session.close();
 			return true;
 			}
 		catch(Exception ex)
@@ -102,6 +103,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		
 			session.getTransaction().commit();
 			
+			session.close();
 			return punches;
 			}
 		catch(Exception ex)
@@ -222,6 +224,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
     		}
         	
         }
+        	session.close();
         }
         catch(Exception ex) {
         	session.getTransaction().rollback();
@@ -258,8 +261,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			   else {
 				   return new PunchModel(false,"Please try again","");
 			   }
-			
-			
+			  // session.close();
 			}
 		catch(Exception ex)
 		{
@@ -286,6 +288,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		SQLQuery query = session.createSQLQuery(sql.toString());
 		int ans = query.executeUpdate();
 		session.getTransaction().commit();
+		session.close();
 		return true;
 		}
 		catch(Exception ex)
@@ -312,6 +315,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		SQLQuery query = session.createSQLQuery(sql.toString());
 		int ans = query.executeUpdate();
 		session.getTransaction().commit();
+		session.close();
 		return true;
 		}
 		catch(Exception ex)
@@ -345,6 +349,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		
 			session.getTransaction().commit();
 			
+			session.close();
 			return true;
 			}
 		catch(Exception ex)
@@ -384,6 +389,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		
 			session.getTransaction().commit();
 			
+			session.close();
 			return obj;
 			}
 		catch(Exception ex)
@@ -409,7 +415,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 
 			session.getTransaction().commit();
 
-			
+			session.close();
 			return true;
 			}
 		catch(Exception ex)
@@ -426,6 +432,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 				SQLQuery query = session.createSQLQuery(sql.toString());
 				int ans = query.executeUpdate();
 				session.getTransaction().commit();
+				session.close();
 				return true;
 				}
 				catch(Exception ex1)
@@ -469,7 +476,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 				
 				 o=rows.get(0);
 				System.out.print(o);
-			
+				session.close();
 
 		}
 		catch(Exception ex) {
@@ -499,6 +506,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 	        SQLQuery query = session.createSQLQuery(sql.toString());
 			List<Object[]> rows = query.list();
 			session.getTransaction().commit();
+			session.close();
 			for(Object[] row : rows){
 				
 				EmployeeData emp = new EmployeeData();
@@ -602,6 +610,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		 query = session.createSQLQuery(sql.toString());
 		rows = query.list();
 		session.getTransaction().commit();
+		session.close();
 		for(Object[] row : rows){
 			
 			EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), null, row[1].toString(), row[2].toString(), row[4].toString(),row[5].toString(), row[9].toString(), row[10].toString(),row[11].toString());
@@ -644,6 +653,7 @@ return "";
 			for(Object row : rows){
 				pragramCodes.add(new ProgramCodes(row.toString(),""));
 			}
+			session.close();
 		 }
 		 catch(Exception ex)
 		 {
@@ -651,6 +661,7 @@ return "";
 		 }
 		 finally {
 			 session.close();
+			 
 		 }
 		return pragramCodes;
 	}
