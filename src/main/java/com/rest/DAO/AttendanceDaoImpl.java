@@ -8,6 +8,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import org.hibernate.SQLQuery;
@@ -20,7 +21,9 @@ import org.springframework.stereotype.Repository;
 import com.rest.models.BarGraphData;
 import com.rest.models.Customfilter;
 import com.rest.models.Employee;
+import com.rest.models.EmployeeAttendanceData;
 import com.rest.models.EmployeeData;
+import com.rest.models.FullUIDataObject;
 import com.rest.models.PieGraphData;
 import com.rest.models.ProgramCodes;
 import com.rest.models.Punch;
@@ -117,11 +120,23 @@ public class AttendanceDaoImpl implements AttendanceDao {
 	}
 
 	@Override
-	public List<EmployeeData> getDataByFilter(Customfilter filter) {
+	public FullUIDataObject getDataByFilter(Customfilter filter) {
 		
 		Session session = sf.openSession();
         StringBuilder sql = new StringBuilder();
-        List<EmployeeData> employeesData=null;
+        List<EmployeeData> employeesDataFirst=new ArrayList<>();
+        List<EmployeeData> employeesDataSecond=new ArrayList<>();
+        List<EmployeeData> employeesDataThird=new ArrayList<>();
+        List<EmployeeData> employeesData1stHalfAttendance=null;
+        List<EmployeeData> employeesDataFullAttendance=null;
+        List<EmployeeData> employeesData2ndHalfAttendance=null;
+        List<EmployeeData> employeesPunchGridData=null;
+        List<EmployeeData> employeesAttendanceGridData = new ArrayList<>();
+        List<EmployeeData> allemployeesData=null;
+        List<BarGraphData> graphDataList = new ArrayList<>();
+        
+        FullUIDataObject uiData= new FullUIDataObject();
+        
         
         try {
         	
@@ -140,13 +155,14 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		if(!filter.getProgramCode().equals("")) {
 			sql.append(" and t1.program_code = '"+filter.getProgramCode()+"'");
 		}
-		employeesData = new ArrayList<EmployeeData>();
+		employeesPunchGridData=new ArrayList<>();
 		SQLQuery query = session.createSQLQuery(sql.toString());
 		List<Object[]> rows = query.list();
 		for(Object[] row : rows){
 			
 			EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), null, row[1].toString(), row[2].toString(), row[4].toString(),row[5].toString(), row[9].toString(), row[10].toString(),row[11].toString());
-			employeesData.add(emp);
+			employeesDataFirst.add(emp);
+			employeesPunchGridData.add(emp);
 		}
 		
 		
@@ -172,7 +188,8 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			
 			EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), null, row[1].toString(), row[2].toString(), row[4].toString(),row[5].toString(), row[9].toString(), row[10].toString(),row[11].toString());
 	
-			employeesData.add(emp);
+			employeesDataSecond.add(emp);
+			employeesPunchGridData.add(emp);
 		}
 		
 		
@@ -197,9 +214,33 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			
 			EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), null, row[1].toString(), row[2].toString(), row[4].toString(),row[5].toString(), row[9].toString(), row[10].toString(),row[11].toString());
 			
-			employeesData.add(emp);
+			employeesDataThird.add(emp);
+			employeesPunchGridData.add(emp);
 		}
-        
+        //full attendance
+		employeesDataFullAttendance=new ArrayList<>(employeesDataFirst);
+		employeesDataFullAttendance.retainAll(employeesDataThird);
+		for(int i =0; i<employeesDataFullAttendance.size();i++) {
+			employeesDataFullAttendance.get(i).setAttendance("Full Day");
+			employeesAttendanceGridData.add(employeesDataFullAttendance.get(i));
+		}
+		
+		//1st half
+		employeesData1stHalfAttendance = new ArrayList<>(employeesDataFirst);
+		employeesData1stHalfAttendance.removeAll(employeesDataThird);
+		for(int i =0; i<employeesData1stHalfAttendance.size();i++) {
+			employeesData1stHalfAttendance.get(i).setAttendance("Half Day");
+			employeesAttendanceGridData.add(employeesData1stHalfAttendance.get(i));
+		}
+		
+		//2nd half
+		employeesData2ndHalfAttendance = new ArrayList<>(employeesDataThird);
+		employeesData2ndHalfAttendance.removeAll(employeesDataFirst);
+		for(int i =0; i<employeesData2ndHalfAttendance.size();i++) {
+			employeesData2ndHalfAttendance.get(i).setAttendance("Half Day");
+			employeesAttendanceGridData.add(employeesData2ndHalfAttendance.get(i));
+		}
+		
         	}
         else {
         	
@@ -214,16 +255,42 @@ public class AttendanceDaoImpl implements AttendanceDao {
     		if(!filter.getProgramCode().equals("")) {
     			sql.append(" and t1.program_code = '"+filter.getProgramCode()+"'");
     		}
-    		employeesData = new ArrayList<EmployeeData>();
+    		employeesPunchGridData = new ArrayList<EmployeeData>();
     		SQLQuery query = session.createSQLQuery(sql.toString());
     		List<Object[]> rows = query.list();
     		for(Object[] row : rows){
     			
     			EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), null, row[1].toString(), row[2].toString(), row[4].toString(),row[5].toString(), row[9].toString(), row[10].toString(),row[11].toString());
-    			employeesData.add(emp);
+    			employeesPunchGridData.add(emp);
     		}
         	
         }
+        	
+        	  sql = new StringBuilder();
+ 	        
+ 	        sql.append("select * from employee_table");
+ 			if(!filter.getProgramCode().equals("")) {
+ 				sql.append(" and (program_code= '"+filter.getProgramCode()+"')");
+ 			}
+ 			if(!filter.getPbId().equals("")) {
+ 				sql.append(" and pb_id = '"+filter.getPbId()+"'");
+ 			}
+
+ 	        
+ 			allemployeesData=new ArrayList<>();
+ 	        SQLQuery query = session.createSQLQuery(sql.toString());
+ 			List<Object[]> rows = query.list();
+ 			session.getTransaction().commit();
+ 			session.close();
+ 			for(Object[] row : rows){
+ 				
+ 				EmployeeData emp = new EmployeeData();
+ 				allemployeesData.add(emp);
+ 			}
+        	
+        	
+        	
+        	
         	session.close();
         }
         catch(Exception ex) {
@@ -232,8 +299,21 @@ public class AttendanceDaoImpl implements AttendanceDao {
         finally {
         	session.close();
         }
-		
-		return employeesData;
+        graphDataList.add(new BarGraphData("7:30am to 9:00am", employeesDataFirst.size()));
+		graphDataList.add(new BarGraphData("12:00 to 1:30pm", employeesDataSecond.size()));
+		graphDataList.add(new BarGraphData("after 3:30pm", employeesDataThird.size()));
+		uiData.setEmployeesData1stHalfAttendance(employeesData1stHalfAttendance);
+		uiData.setEmployeesData2ndHalfAttendance(employeesData2ndHalfAttendance);
+		uiData.setEmployeesDataFirst(employeesDataFirst);
+		uiData.setEmployeesDataFullAttendance(employeesDataFullAttendance);
+		uiData.setEmployeesDataSecond(employeesDataSecond);
+		uiData.setEmployeesDataThird(employeesDataThird);
+		uiData.setEmployeesPunchGridData(employeesPunchGridData);
+		uiData.setAllemployeesData(allemployeesData);
+		uiData.setBarGraphData(graphDataList);
+		uiData.setPieGraphData(new PieGraphData(allemployeesData.size()-employeesDataFullAttendance.size(),employeesDataFullAttendance.size()));
+		uiData.setEmployeesAttendanceGridData(employeesAttendanceGridData);
+		return uiData;
 	}
 
 
@@ -456,13 +536,11 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			session.beginTransaction();
 		 StringBuilder sql = new StringBuilder();
 	        
-	        sql.append("select count(*) from\r\n"
+	        sql.append("select table1.pb_id,table1.name,table1.designation,table1.division,table1.phone_no,table1.program_code,table1.date from\r\n"
 	        		+ "((select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, min(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'07:30:00' and punch.time <'09:00:00' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp) as table1\r\n"
-	        		+ "  inner join \r\n"
-	        		+ " (select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, min(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'12:00:00' and punch.time <'13:30:00' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp) as table2\r\n"
 	        		+ " inner join \r\n"
-	        		+ " (select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, max(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'15:30:00' and punch.time <'23:59:59' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp) as table3 \r\n"
-	        		+ " on table1.pb_id = table2.pb_id and table2.pb_id=table3.pb_id) where (table1.date>= '"+filter.getDate()+"' and table1.date<= '"+filter.getEndDate()+"') and(table2.date>= '"+filter.getDate()+"' and table2.date<= '"+filter.getEndDate()+"') and (table3.date>= '"+filter.getDate()+"' and table3.date<= '"+filter.getEndDate()+"')");
+	        		+ " (select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, max(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'15:30:00' and punch.time <'23:59:59' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp) as table2 \r\n"
+	        		+ " on table1.pb_id = table2.pb_id and table2.date=table2.date) where (table1.date>= '"+filter.getDate()+"' and table1.date<= '"+filter.getEndDate()+"') and(table2.date>= '"+filter.getDate()+"' and table2.date<= '"+filter.getEndDate()+"') and (table3.date>= '"+filter.getDate()+"' and table3.date<= '"+filter.getEndDate()+"')");
 			if(!filter.getProgramCode().equals("")) {
 				sql.append(" and (table1.program_code= '"+filter.getProgramCode()+"' and table2.program_code= '"+filter.getProgramCode()+"' and table3.program_code= '"+filter.getProgramCode()+"')");
 			}
@@ -535,6 +613,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
         StringBuilder sql = new StringBuilder();
         List<EmployeeData> employeesData=null;
         List<BarGraphData> graphDataList = new ArrayList<>();
+ 
         
         try {
         	
@@ -664,5 +743,11 @@ return "";
 			 
 		 }
 		return pragramCodes;
+	}
+
+	@Override
+	public List<EmployeeData> getAttendanceDataByFilter(Customfilter filter) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

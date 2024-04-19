@@ -18,6 +18,7 @@ import com.rest.models.Customfilter;
 import com.rest.models.Employee;
 import com.rest.models.EmployeeData;
 import com.rest.models.FileNamePath;
+import com.rest.models.FullUIDataObject;
 import com.rest.models.PieGraphData;
 import com.rest.models.ProgramCodes;
 import com.rest.models.Punch;
@@ -81,7 +82,7 @@ public class HomeController {
 	}
 	@CrossOrigin(origins = "*")
 	@PostMapping(value = "getDataByFilter")
-	public List<EmployeeData> getDataByFilter(@RequestBody Customfilter filter)
+	public FullUIDataObject getDataByFilter(@RequestBody Customfilter filter)
 
 	{
 		return  service.getDataByFilter(filter);
@@ -192,6 +193,13 @@ return objs;
 
 			{
 				return  service.getProgramCodes();
+			}
+			@CrossOrigin(origins = "*")
+			@PostMapping(value = "getAttendanceDataByFilter")
+			public List<EmployeeData> getAttendanceDataByFilter(@RequestBody Customfilter filter)
+
+			{
+				return  service.getAttendanceDataByFilter(filter);
 			}
 
 

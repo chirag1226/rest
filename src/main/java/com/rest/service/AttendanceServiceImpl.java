@@ -10,6 +10,7 @@ import com.rest.models.BarGraphData;
 import com.rest.models.Customfilter;
 import com.rest.models.Employee;
 import com.rest.models.EmployeeData;
+import com.rest.models.FullUIDataObject;
 import com.rest.models.PieGraphData;
 import com.rest.models.ProgramCodes;
 import com.rest.models.Punch;
@@ -45,7 +46,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 	}
 
 	@Override
-	public List<EmployeeData> getDataByFilter(Customfilter filter) {
+	public FullUIDataObject getDataByFilter(Customfilter filter) {
 		// TODO Auto-generated method stub
 		 return dao.getDataByFilter(filter);
 	}
@@ -101,6 +102,12 @@ public class AttendanceServiceImpl implements AttendanceService {
 	public List<ProgramCodes> getProgramCodes() {
 		// TODO Auto-generated method stub
 		return dao.getProgramCodes();
+	}
+
+	@Override
+	public List<EmployeeData> getAttendanceDataByFilter(Customfilter filter) {
+		// TODO Auto-generated method stub
+		return dao.getAttendanceDataByFilter(filter);
 	}
 
 

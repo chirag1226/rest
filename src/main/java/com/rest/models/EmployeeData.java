@@ -14,6 +14,13 @@ public class EmployeeData {
 	private String time;
 	private String date;
 	private String punchSlot;
+	private String attendance;
+	public String getAttendance() {
+		return attendance;
+	}
+	public void setAttendance(String attendance) {
+		this.attendance = attendance;
+	}
 	public String getPunchSlot() {
 		return punchSlot;
 	}
@@ -90,10 +97,21 @@ public class EmployeeData {
 	}
 	@Override
 	public String toString() {
-		return "EmployeeData [name=" + name + ", pbId=" + pbId + ", reffId=" + reffId + ", designation=" + designation
-				+ ", division=" + division + ", phoneNo=" + phoneNo + ", programCode=" + programCode + ", time=" + time
-				+ ", date=" + date + ", punchSlot=" + punchSlot + "]";
+		return this.getDate()+this.getPbId();
 	}
+	@Override  
+	public boolean equals(Object obj)   
+	{  
+		EmployeeData o = (EmployeeData)obj;
+	if (obj == null)   
+	return false;  
+if(this.date.equals(o.getDate())&& this.getPbId().equals(o.getPbId()))
+{
+	return true;
+}
+return false;
+	} 
+
 	
 	
 }
