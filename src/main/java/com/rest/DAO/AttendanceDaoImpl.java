@@ -153,8 +153,8 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			List<Object[]> rows = query.list();
 			for (Object[] row : rows) {
 
-				EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), new RfId(row[7].toString()),
-						row[1].toString(), row[2].toString(), row[4].toString(), row[5].toString(), row[11].toString(),
+				EmployeeData emp = new EmployeeData(row[4].toString(), row[0].toString(), new RfId(row[9].toString()),
+						row[2].toString(), row[3].toString(), row[5].toString(), row[6].toString(), row[11].toString(),
 						row[12].toString(), row[13].toString());
 				employeesDataFirst.add(emp);
 				employeesPunchGridData.add(emp);
@@ -179,8 +179,8 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			rows = query.list();
 			for (Object[] row : rows) {
 
-				EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), new RfId(row[7].toString()),
-						row[1].toString(), row[2].toString(), row[4].toString(), row[5].toString(), row[11].toString(),
+				EmployeeData emp = new EmployeeData(row[4].toString(), row[0].toString(), new RfId(row[9].toString()),
+						row[2].toString(), row[3].toString(), row[5].toString(), row[6].toString(), row[11].toString(),
 						row[12].toString(), row[13].toString());
 
 				employeesDataSecond.add(emp);
@@ -207,8 +207,8 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			// session.getTransaction().commit();
 			for (Object[] row : rows) {
 
-				EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), new RfId(row[7].toString()),
-						row[1].toString(), row[2].toString(), row[4].toString(), row[5].toString(), row[11].toString(),
+				EmployeeData emp = new EmployeeData(row[4].toString(), row[0].toString(), new RfId(row[9].toString()),
+						row[2].toString(), row[3].toString(), row[5].toString(), row[6].toString(), row[11].toString(),
 						row[12].toString(), row[13].toString());
 
 				employeesDataThird.add(emp);
@@ -235,9 +235,9 @@ public class AttendanceDaoImpl implements AttendanceDao {
 				rows = query.list();
 				for (Object[] row : rows) {
 
-					EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(),
-							new RfId(row[7].toString()), row[1].toString(), row[2].toString(), row[4].toString(),
-							row[5].toString(), row[11].toString(), row[12].toString(), row[13].toString());
+					EmployeeData emp = new EmployeeData(row[4].toString(), row[0].toString(), new RfId(row[9].toString()),
+							row[2].toString(), row[3].toString(), row[5].toString(), row[6].toString(), row[11].toString(),
+							row[12].toString(), row[13].toString());
 					employeesPunchGridData.add(emp);
 				}
 
@@ -261,9 +261,11 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 			for (Object[] row : rows) {
 
-				EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), new RfId(row[7].toString()),
-						row[1].toString(), row[2].toString(), row[4].toString(), row[5].toString(), row[9].toString(),
-						row[8].toString(), "", "Absent");
+				EmployeeData emp = new EmployeeData(row[4].toString(), row[0].toString(), new RfId(row[9].toString()),
+						row[2].toString(), row[3].toString(), row[5].toString(), row[6].toString(), row[7].toString(),
+						row[1].toString(), "", "Absent");
+				
+				
 				allemployeesData.add(emp);
 				LocalDate startDate = LocalDate.parse(filter.getDate(), dtf);
 				LocalDate endDate = LocalDate.parse(filter.getEndDate(), dtf);
@@ -551,9 +553,9 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			session.close();
 			for (Object[] row : rows) {
 
-				EmployeeData employee = new EmployeeData(row[3].toString(), row[0].toString(),
-						new RfId(row[7].toString()), row[1].toString(), row[2].toString(), row[4].toString(),
-						row[5].toString(), row[9].toString(), row[8].toString(), "Registration",
+				EmployeeData employee = new EmployeeData(row[4].toString(), row[0].toString(),
+						new RfId(row[9].toString()), row[2].toString(), row[3].toString(), row[5].toString(),
+						row[6].toString(), row[7].toString(), row[1].toString(), "Registration",
 						"Attendance no marked");
 				allemployeesData.add(employee);
 			}
