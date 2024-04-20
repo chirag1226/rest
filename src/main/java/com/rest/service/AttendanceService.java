@@ -6,6 +6,7 @@ import com.rest.models.BarGraphData;
 import com.rest.models.Customfilter;
 import com.rest.models.Employee;
 import com.rest.models.EmployeeData;
+import com.rest.models.FullDataRegistration;
 import com.rest.models.FullUIDataObject;
 import com.rest.models.PieGraphData;
 import com.rest.models.ProgramCodes;
@@ -14,12 +15,11 @@ import com.rest.models.PunchModel;
 import com.rest.models.SignUp;
 
 public interface AttendanceService {
-	
-	
+
 	public boolean savepunchIn(String reffId, String pbId);
 
-	public boolean saveEmployee(Employee emp);
-	
+	public FullDataRegistration saveEmployee(Employee emp);
+
 	public List<Punch> getDataByDate(String date);
 
 	public FullUIDataObject getDataByFilter(Customfilter filter);

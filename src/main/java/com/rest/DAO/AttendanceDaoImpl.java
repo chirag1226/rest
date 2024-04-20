@@ -3,6 +3,7 @@ package com.rest.DAO;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -23,6 +24,7 @@ import com.rest.models.Customfilter;
 import com.rest.models.Employee;
 import com.rest.models.EmployeeAttendanceData;
 import com.rest.models.EmployeeData;
+import com.rest.models.FullDataRegistration;
 import com.rest.models.FullUIDataObject;
 import com.rest.models.PieGraphData;
 import com.rest.models.ProgramCodes;
@@ -34,272 +36,313 @@ import com.rest.models.SignUp;
 
 @Repository
 public class AttendanceDaoImpl implements AttendanceDao {
-	
+
 	@Autowired
 	SessionFactory sf;
 
+	// verified on 20/04/24
 	@Override
 	public boolean savePunchIn(String reffId, String pbId) {
-	    Date date = new Date();  
+		Date date = new Date();
 		Session session = sf.openSession();
 		try {
-		
+
 			session.beginTransaction();
-			
+
 			SimpleDateFormat localDateFormat = new SimpleDateFormat("HH:mm:ss");
-	        String time = localDateFormat.format(date);
-	        
-	        LocalTime firstLower = LocalTime.parse("07:30:00");
-	        LocalTime firstUpper = LocalTime.parse("09:00:00");
-	        LocalTime secondLower = LocalTime.parse("12:00:00");
-	        LocalTime secondUpper = LocalTime.parse("13:30:00");
-	        LocalTime thirdLower = LocalTime.parse("15:30:00");
-	        LocalTime current = LocalTime.parse(time);
-	        String punchSlot;
-	        
-	        if(firstLower.compareTo(current)<=0 && firstUpper.compareTo(current)>=0) {
-	        	punchSlot="Forenoon Punch In";
-	        }
-	        else if(secondLower.compareTo(current)<=0 && secondUpper.compareTo(current)>=0) {
-	        	punchSlot="Afternoon Punch In";
-	        }
-	        else if(thirdLower.compareTo(current)<=0) {
-	        	punchSlot = "Punch Out";
-	        }
-	        else {
-	        	punchSlot = "Invalid Punch";
-	        }
-		
-			session.save(new Punch_xref(new RfId(reffId),date,date,date,true,punchSlot,pbId));
-		
+			String time = localDateFormat.format(date);
+
+			LocalTime firstLower = LocalTime.parse("07:30:00");
+			LocalTime firstUpper = LocalTime.parse("09:00:00");
+			LocalTime secondLower = LocalTime.parse("12:00:00");
+			LocalTime secondUpper = LocalTime.parse("13:30:00");
+			LocalTime thirdLower = LocalTime.parse("15:30:00");
+			LocalTime current = LocalTime.parse(time);
+			String punchSlot;
+
+			if (firstLower.compareTo(current) <= 0 && firstUpper.compareTo(current) >= 0) {
+				punchSlot = "Forenoon Punch In";
+			} else if (secondLower.compareTo(current) <= 0 && secondUpper.compareTo(current) >= 0) {
+				punchSlot = "Afternoon Punch In";
+			} else if (thirdLower.compareTo(current) <= 0) {
+				punchSlot = "Punch Out";
+			} else {
+				punchSlot = "Invalid Punch";
+			}
+
+			session.save(new Punch_xref(new RfId(reffId), date, date, date, true, punchSlot, pbId));
+
 			session.getTransaction().commit();
-			
+
 			session.close();
 			return true;
-			}
-		catch(Exception ex)
-		{
+		} catch (Exception ex) {
 			session.getTransaction().rollback();
-		}
-		finally {
+		} finally {
 			session.close();
 		}
 		return false;
 	}
 
+	// verified on 20/04/24
 	@Override
 	public List<Punch> getDataByDate(String date) {
-		
-		
-		
+
 		Session session = sf.openSession();
-		
+
 		try {
-		
+
 			session.beginTransaction();
-			
+
 			Query query = session.createQuery("from Punch_XREF_ENTITY where date = :c1");
-			
+
 			query.setString("c1", date);
-			
+
 			List<Punch> punches = query.list();
-		
+
 			session.getTransaction().commit();
-			
+
 			session.close();
 			return punches;
-			}
-		catch(Exception ex)
-		{
+		} catch (Exception ex) {
 			session.getTransaction().rollback();
-		}
-		finally {
+		} finally {
 			session.close();
 		}
 		return null;
 	}
 
+	// verified on 20/04/24
 	@Override
 	public FullUIDataObject getDataByFilter(Customfilter filter) {
-		
+
 		Session session = sf.openSession();
-        StringBuilder sql = new StringBuilder();
-        List<EmployeeData> employeesDataFirst=new ArrayList<>();
-        List<EmployeeData> employeesDataSecond=new ArrayList<>();
-        List<EmployeeData> employeesDataThird=new ArrayList<>();
-        List<EmployeeData> employeesData1stHalfAttendance=null;
-        List<EmployeeData> employeesDataFullAttendance=null;
-        List<EmployeeData> employeesData2ndHalfAttendance=null;
-        List<EmployeeData> employeesPunchGridData=null;
-        List<EmployeeData> employeesAttendanceGridData = new ArrayList<>();
-        List<EmployeeData> allemployeesData=null;
-        List<BarGraphData> graphDataList = new ArrayList<>();
-        
-        FullUIDataObject uiData= new FullUIDataObject();
-        
-        
-        try {
-        	
-        	session.beginTransaction();
-        	
-        	if(!filter.isAllData()) {
-        
-        sql.append("select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, min(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'07:30:00' and punch.time <'09:00:00' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
-		
-		if(!filter.getPbId().equals("")) {
-			sql.append(" and t1.pb_id = '"+filter.getPbId()+"'");
+		StringBuilder sql = new StringBuilder();
+		List<EmployeeData> employeesDataFirst = new ArrayList<>();
+		List<EmployeeData> employeesDataSecond = new ArrayList<>();
+		List<EmployeeData> employeesDataThird = new ArrayList<>();
+		List<EmployeeData> employeesData1stHalfAttendance = new ArrayList<>();
+		List<EmployeeData> employeesDataFullAttendance = new ArrayList<>();
+		List<EmployeeData> employeesData2ndHalfAttendance = new ArrayList<>();
+		List<EmployeeData> employeesDataAbsentAttendance = new ArrayList<>();
+		List<EmployeeData> employeesPunchGridData = null;
+		List<EmployeeData> employeesAttendanceGridData = new ArrayList<>();
+		List<EmployeeData> allemployeesData = new ArrayList<>();
+		List<BarGraphData> graphDataList = new ArrayList<>();
+
+		FullUIDataObject uiData = new FullUIDataObject();
+
+		try {
+
+			session.beginTransaction();
+
+			sql.append(
+					"select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, min(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'07:30:00' and punch.time <'09:00:00' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
+
+			if (!filter.getPbId().equals("")) {
+				sql.append(" and t1.pb_id = '" + filter.getPbId() + "'");
+			}
+			if (!filter.getDate().equals("")) {
+				sql.append(" and (t2.date >= '" + filter.getDate() + "' and t2.date <= '" + filter.getEndDate() + "')");
+			}
+			if (!filter.getProgramCode().equals("")) {
+				sql.append(" and t1.program_code = '" + filter.getProgramCode() + "'");
+			}
+			employeesPunchGridData = new ArrayList<>();
+			SQLQuery query = session.createSQLQuery(sql.toString());
+			List<Object[]> rows = query.list();
+			for (Object[] row : rows) {
+
+				EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), new RfId(row[7].toString()),
+						row[1].toString(), row[2].toString(), row[4].toString(), row[5].toString(), row[11].toString(),
+						row[12].toString(), row[13].toString());
+				employeesDataFirst.add(emp);
+				employeesPunchGridData.add(emp);
+			}
+
+			sql = new StringBuilder();
+
+			sql.append(
+					"select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, min(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'12:00:00' and punch.time <'13:30:00' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
+
+			if (!filter.getPbId().equals("")) {
+				sql.append(" and t1.pb_id = '" + filter.getPbId() + "'");
+			}
+			if (!filter.getDate().equals("")) {
+				sql.append(" and (t2.date >= '" + filter.getDate() + "' and t2.date <= '" + filter.getEndDate() + "')");
+			}
+			if (!filter.getProgramCode().equals("")) {
+				sql.append(" and t1.program_code = '" + filter.getProgramCode() + "'");
+			}
+
+			query = session.createSQLQuery(sql.toString());
+			rows = query.list();
+			for (Object[] row : rows) {
+
+				EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), new RfId(row[7].toString()),
+						row[1].toString(), row[2].toString(), row[4].toString(), row[5].toString(), row[11].toString(),
+						row[12].toString(), row[13].toString());
+
+				employeesDataSecond.add(emp);
+				employeesPunchGridData.add(emp);
+			}
+
+			sql = new StringBuilder();
+
+			sql.append(
+					"select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, max(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'15:30:00' and punch.time <'23:59:59' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
+
+			if (!filter.getPbId().equals("")) {
+				sql.append(" and t1.pb_id = '" + filter.getPbId() + "'");
+			}
+			if (!filter.getDate().equals("")) {
+				sql.append(" and (t2.date >= '" + filter.getDate() + "' and t2.date <= '" + filter.getEndDate() + "')");
+			}
+			if (!filter.getProgramCode().equals("")) {
+				sql.append(" and t1.program_code = '" + filter.getProgramCode() + "'");
+			}
+
+			query = session.createSQLQuery(sql.toString());
+			rows = query.list();
+			// session.getTransaction().commit();
+			for (Object[] row : rows) {
+
+				EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), new RfId(row[7].toString()),
+						row[1].toString(), row[2].toString(), row[4].toString(), row[5].toString(), row[11].toString(),
+						row[12].toString(), row[13].toString());
+
+				employeesDataThird.add(emp);
+				employeesPunchGridData.add(emp);
+			}
+
+			if (filter.isAllData()) {
+				sql = new StringBuilder();
+				sql.append(
+						"select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id ) as t2 where t1.pb_id = t2.pb_id_temp ");
+
+				if (!filter.getPbId().equals("")) {
+					sql.append(" and t1.pb_id = '" + filter.getPbId() + "'");
+				}
+				if (!filter.getDate().equals("")) {
+					sql.append(" and (t2.date >= '" + filter.getDate() + "' and t2.date <= '" + filter.getEndDate()
+							+ "')");
+				}
+				if (!filter.getProgramCode().equals("")) {
+					sql.append(" and t1.program_code = '" + filter.getProgramCode() + "'");
+				}
+				employeesPunchGridData = new ArrayList<EmployeeData>();
+				query = session.createSQLQuery(sql.toString());
+				rows = query.list();
+				for (Object[] row : rows) {
+
+					EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(),
+							new RfId(row[7].toString()), row[1].toString(), row[2].toString(), row[4].toString(),
+							row[5].toString(), row[11].toString(), row[12].toString(), row[13].toString());
+					employeesPunchGridData.add(emp);
+				}
+
+			}
+
+			sql = new StringBuilder();
+
+			sql.append("select * from employee_table where 1=1");
+
+			if (!filter.getProgramCode().equals("")) {
+				sql.append(" and (program_code= '" + filter.getProgramCode() + "')");
+			}
+			if (!filter.getPbId().equals("")) {
+				sql.append(" and pb_id = '" + filter.getPbId() + "'");
+			}
+
+			query = session.createSQLQuery(sql.toString());
+			rows = query.list();
+			session.getTransaction().commit();
+			session.close();
+			final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			for (Object[] row : rows) {
+
+				EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), new RfId(row[7].toString()),
+						row[1].toString(), row[2].toString(), row[4].toString(), row[5].toString(), row[9].toString(),
+						row[8].toString(), "", "Absent");
+				allemployeesData.add(emp);
+				LocalDate startDate = LocalDate.parse(filter.getDate(), dtf);
+				LocalDate endDate = LocalDate.parse(filter.getEndDate(), dtf);
+
+				for (LocalDate date = startDate; date.isBefore(endDate.plusDays(1)); date = date.plusDays(1)) {
+					EmployeeData cloneEmp = new EmployeeData(emp.getName(), emp.getPbId(), emp.getReffId(),
+							emp.getDesignation(), emp.getDivision(), emp.getPhoneNo(), emp.getProgramCode(),
+							emp.getTime(), emp.getDate(), emp.getPunchSlot(), emp.getAttendance());
+					cloneEmp.setDate(date.toString());
+					employeesDataAbsentAttendance.add(cloneEmp);
+				}
+
+			}
+
+			session.close();
+		} catch (Exception ex) {
+			session.getTransaction().rollback();
+		} finally {
+			session.close();
 		}
-		if(!filter.getDate().equals("")) {
-			sql.append(" and (t2.date >= '"+filter.getDate()+"' and t2.date <= '"+filter.getEndDate()+"')");
-		}
-		if(!filter.getProgramCode().equals("")) {
-			sql.append(" and t1.program_code = '"+filter.getProgramCode()+"'");
-		}
-		employeesPunchGridData=new ArrayList<>();
-		SQLQuery query = session.createSQLQuery(sql.toString());
-		List<Object[]> rows = query.list();
-		for(Object[] row : rows){
-			
-			EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), null, row[1].toString(), row[2].toString(), row[4].toString(),row[5].toString(), row[9].toString(), row[10].toString(),row[11].toString());
-			employeesDataFirst.add(emp);
-			employeesPunchGridData.add(emp);
-		}
-		
-		
-		
-		
-         sql = new StringBuilder();
-        
-        sql.append("select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, min(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'12:00:00' and punch.time <'13:30:00' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
-		
-		if(!filter.getPbId().equals("")) {
-			sql.append(" and t1.pb_id = '"+filter.getPbId()+"'");
-		}
-		if(!filter.getDate().equals("")) {
-			sql.append(" and (t2.date >= '"+filter.getDate()+"' and t2.date <= '"+filter.getEndDate()+"')");
-		}
-		if(!filter.getProgramCode().equals("")) {
-			sql.append(" and t1.program_code = '"+filter.getProgramCode()+"'");
-		}
-		 
-		 query = session.createSQLQuery(sql.toString());
-		 rows = query.list();
-		for(Object[] row : rows){
-			
-			EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), null, row[1].toString(), row[2].toString(), row[4].toString(),row[5].toString(), row[9].toString(), row[10].toString(),row[11].toString());
-	
-			employeesDataSecond.add(emp);
-			employeesPunchGridData.add(emp);
-		}
-		
-		
-         sql = new StringBuilder();
-        
-        sql.append("select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, max(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'15:30:00' and punch.time <'23:59:59' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
-		
-		if(!filter.getPbId().equals("")) {
-			sql.append(" and t1.pb_id = '"+filter.getPbId()+"'");
-		}
-		if(!filter.getDate().equals("")) {
-			sql.append(" and (t2.date >= '"+filter.getDate()+"' and t2.date <= '"+filter.getEndDate()+"')");
-		}
-		if(!filter.getProgramCode().equals("")) {
-			sql.append(" and t1.program_code = '"+filter.getProgramCode()+"'");
-		}
-		
-		 query = session.createSQLQuery(sql.toString());
-		rows = query.list();
-		session.getTransaction().commit();
-		for(Object[] row : rows){
-			
-			EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), null, row[1].toString(), row[2].toString(), row[4].toString(),row[5].toString(), row[9].toString(), row[10].toString(),row[11].toString());
-			
-			employeesDataThird.add(emp);
-			employeesPunchGridData.add(emp);
-		}
-        //full attendance
-		employeesDataFullAttendance=new ArrayList<>(employeesDataFirst);
-		employeesDataFullAttendance.retainAll(employeesDataThird);
-		for(int i =0; i<employeesDataFullAttendance.size();i++) {
-			employeesDataFullAttendance.get(i).setAttendance("Full Day");
-			employeesAttendanceGridData.add(employeesDataFullAttendance.get(i));
-		}
-		
-		//1st half
+
+		// 1st half
 		employeesData1stHalfAttendance = new ArrayList<>(employeesDataFirst);
-		employeesData1stHalfAttendance.removeAll(employeesDataThird);
-		for(int i =0; i<employeesData1stHalfAttendance.size();i++) {
+		employeesData1stHalfAttendance.retainAll(employeesDataSecond);
+
+		// 2nd half
+		employeesData2ndHalfAttendance = new ArrayList<>(employeesDataSecond);
+		employeesData2ndHalfAttendance.retainAll(employeesDataThird);
+
+		// full attendance
+		employeesDataFullAttendance = new ArrayList<>(employeesDataFirst);
+		employeesDataFullAttendance.retainAll(employeesDataThird);
+
+		employeesData1stHalfAttendance.removeAll(employeesDataFullAttendance);
+		employeesData2ndHalfAttendance.removeAll(employeesDataFullAttendance);
+
+		// Absents
+		employeesDataAbsentAttendance.removeAll(employeesDataFullAttendance);
+		employeesDataAbsentAttendance.removeAll(employeesData1stHalfAttendance);
+		employeesDataAbsentAttendance.removeAll(employeesData2ndHalfAttendance);
+
+		for (int i = 0; i < employeesData1stHalfAttendance.size(); i++) {
 			employeesData1stHalfAttendance.get(i).setAttendance("Half Day");
 			employeesAttendanceGridData.add(employeesData1stHalfAttendance.get(i));
 		}
-		
-		//2nd half
-		employeesData2ndHalfAttendance = new ArrayList<>(employeesDataThird);
-		employeesData2ndHalfAttendance.removeAll(employeesDataFirst);
-		for(int i =0; i<employeesData2ndHalfAttendance.size();i++) {
+		for (int i = 0; i < employeesData2ndHalfAttendance.size(); i++) {
 			employeesData2ndHalfAttendance.get(i).setAttendance("Half Day");
 			employeesAttendanceGridData.add(employeesData2ndHalfAttendance.get(i));
 		}
-		
-        	}
-        else {
-        	
-        	sql.append("select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id ) as t2 where t1.pb_id = t2.pb_id_temp ");
-    		
-    		if(!filter.getPbId().equals("")) {
-    			sql.append(" and t1.pb_id = '"+filter.getPbId()+"'");
-    		}
-    		if(!filter.getDate().equals("")) {
-    			sql.append(" and (t2.date >= '"+filter.getDate()+"' and t2.date <= '"+filter.getEndDate()+"')");
-    		}
-    		if(!filter.getProgramCode().equals("")) {
-    			sql.append(" and t1.program_code = '"+filter.getProgramCode()+"'");
-    		}
-    		employeesPunchGridData = new ArrayList<EmployeeData>();
-    		SQLQuery query = session.createSQLQuery(sql.toString());
-    		List<Object[]> rows = query.list();
-    		for(Object[] row : rows){
-    			
-    			EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), null, row[1].toString(), row[2].toString(), row[4].toString(),row[5].toString(), row[9].toString(), row[10].toString(),row[11].toString());
-    			employeesPunchGridData.add(emp);
-    		}
-        	
-        }
-        	
-        	  sql = new StringBuilder();
- 	        
- 	        sql.append("select * from employee_table");
- 			if(!filter.getProgramCode().equals("")) {
- 				sql.append(" and (program_code= '"+filter.getProgramCode()+"')");
- 			}
- 			if(!filter.getPbId().equals("")) {
- 				sql.append(" and pb_id = '"+filter.getPbId()+"'");
- 			}
+		for (int i = 0; i < employeesDataFullAttendance.size(); i++) {
+			employeesDataFullAttendance.get(i).setAttendance("Full Day");
+			employeesAttendanceGridData.add(employeesDataFullAttendance.get(i));
+		}
+		for (int i = 0; i < employeesDataAbsentAttendance.size(); i++) {
+			employeesDataAbsentAttendance.get(i).setAttendance("Absent");
+			employeesAttendanceGridData.add(employeesDataAbsentAttendance.get(i));
+		}
 
- 	        
- 			allemployeesData=new ArrayList<>();
- 	        SQLQuery query = session.createSQLQuery(sql.toString());
- 			List<Object[]> rows = query.list();
- 			session.getTransaction().commit();
- 			session.close();
- 			for(Object[] row : rows){
- 				
- 				EmployeeData emp = new EmployeeData();
- 				allemployeesData.add(emp);
- 			}
-        	
-        	
-        	
-        	
-        	session.close();
-        }
-        catch(Exception ex) {
-        	session.getTransaction().rollback();
-        }
-        finally {
-        	session.close();
-        }
-        graphDataList.add(new BarGraphData("7:30am to 9:00am", employeesDataFirst.size()));
+		// finding absents
+
+		// each emp
+		for (int i = 0; i < allemployeesData.size(); i++) {
+			allemployeesData.get(i).setAttendance("Absent");
+			// each day
+			for (int j = 0; j < 3; j++) {
+				// check 1st punch
+				for (int k = 0; k < employeesDataFirst.size(); k++) {
+					if (allemployeesData.get(i).equals(employeesDataFirst.get(k))) {
+						allemployeesData.get(i).setAttendance("Absent");
+					}
+				}
+
+				// check 2nd punch
+
+				// check 3rd punch
+			}
+		}
+
+		graphDataList.add(new BarGraphData("7:30am to 9:00am", employeesDataFirst.size()));
 		graphDataList.add(new BarGraphData("12:00 to 1:30pm", employeesDataSecond.size()));
 		graphDataList.add(new BarGraphData("after 3:30pm", employeesDataThird.size()));
 		uiData.setEmployeesData1stHalfAttendance(employeesData1stHalfAttendance);
@@ -311,103 +354,100 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		uiData.setEmployeesPunchGridData(employeesPunchGridData);
 		uiData.setAllemployeesData(allemployeesData);
 		uiData.setBarGraphData(graphDataList);
-		uiData.setPieGraphData(new PieGraphData(allemployeesData.size()-employeesDataFullAttendance.size(),employeesDataFullAttendance.size()));
+		uiData.setPieGraphData(
+				new PieGraphData(employeesDataAbsentAttendance.size() + employeesData1stHalfAttendance.size()
+						+ employeesData2ndHalfAttendance.size(), employeesDataFullAttendance.size()));
 		uiData.setEmployeesAttendanceGridData(employeesAttendanceGridData);
 		return uiData;
 	}
 
-
+	// verified on 20/04/24
 	@Override
 	public PunchModel getPunchData(String filter) {
 		Session session = sf.openSession();
-		
+
 		try {
-		
+
 			session.beginTransaction();
-			
+
 			Query query = session.createQuery("from EMPLOYEE_ENTITY where is_valid = true and reff_id_reff_id = :c1");
-			
+
 			query.setString("c1", filter);
-			
+
 			Employee emp = (Employee) query.getSingleResult();
-		
+
 			session.getTransaction().commit();
-			   DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy");  
-			   LocalDateTime now = LocalDateTime.now();
-			   if(!emp.equals(null)) {
-				   PunchModel obj = new PunchModel(true,emp.getName()+ " has punched at "+ dtf.format(now),emp.getPbId());
-				   return obj;
-			   }
-			   else {
-				   return new PunchModel(false,"Please try again","");
-			   }
-			  // session.close();
+			session.close();
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy");
+			LocalDateTime now = LocalDateTime.now();
+			if (!emp.equals(null)) {
+				PunchModel obj = new PunchModel(true, emp.getName() + " has punched at " + dtf.format(now),
+						emp.getPbId());
+				return obj;
+			} else {
+				return new PunchModel(false, "Please try again", "");
 			}
-		catch(Exception ex)
-		{
+			// session.close();
+		} catch (Exception ex) {
 			session.getTransaction().rollback();
-			//exception catch
-		}
-		finally {
+			// exception catch
+		} finally {
 			session.close();
 		}
 		return null;
 	}
 
+	// verified on 20/04/24
 	@Override
 	public boolean makeEmployeeInvalidIfExist(Employee emp) {
 		Session session = sf.openSession();
 		try {
-		
-		
-		session.beginTransaction();
-        StringBuilder sql = new StringBuilder();
-        
-        sql.append("UPDATE EMPLOYEE_TABLE SET is_valid = false  WHERE reff_id_reff_id = '"+emp.getReffId().getReffId()+"'");
-		
-		SQLQuery query = session.createSQLQuery(sql.toString());
-		int ans = query.executeUpdate();
-		session.getTransaction().commit();
-		session.close();
-		return true;
-		}
-		catch(Exception ex)
-		{
-			session.getTransaction().rollback();
-		}
-		finally {
+
+			session.beginTransaction();
+			StringBuilder sql = new StringBuilder();
+
+			sql.append("UPDATE EMPLOYEE_TABLE SET is_valid = false  WHERE reff_id_reff_id = '"
+					+ emp.getReffId().getReffId() + "'");
+
+			SQLQuery query = session.createSQLQuery(sql.toString());
+			int ans = query.executeUpdate();
+			session.getTransaction().commit();
 			session.close();
-		}
-		return false;
-	}
-	
-	@Override
-	public boolean makeEmployeePunchInvalidIfExist(Employee emp) {
-		Session session = sf.openSession();
-		try {
-		
-		
-		session.beginTransaction();
-        StringBuilder sql = new StringBuilder();
-        
-        sql.append("UPDATE PUNCH_XREF_TABLE SET valid = false  WHERE reff_id_reff_id = '"+emp.getReffId().getReffId()+"'");
-		
-		SQLQuery query = session.createSQLQuery(sql.toString());
-		int ans = query.executeUpdate();
-		session.getTransaction().commit();
-		session.close();
-		return true;
-		}
-		catch(Exception ex)
-		{
+			return true;
+		} catch (Exception ex) {
 			session.getTransaction().rollback();
-		}
-		finally {
+		} finally {
 			session.close();
 		}
 		return false;
 	}
 
+	// verified on 20/04/24
+	@Override
+	public boolean makeEmployeePunchInvalidIfExist(Employee emp) {
+		Session session = sf.openSession();
+		try {
+
+			session.beginTransaction();
+			StringBuilder sql = new StringBuilder();
+
+			sql.append("UPDATE PUNCH_XREF_TABLE SET valid = false  WHERE reff_id_reff_id = '"
+					+ emp.getReffId().getReffId() + "'");
+
+			SQLQuery query = session.createSQLQuery(sql.toString());
+			int ans = query.executeUpdate();
+			session.getTransaction().commit();
+			session.close();
+			return true;
+		} catch (Exception ex) {
+			session.getTransaction().rollback();
+		} finally {
+			session.close();
+		}
+		return false;
+	}
+
+	// verified on 20/04/24
 	@Override
 	public boolean signUp(SignUp userRegistrationDto) {
 		MessageDigest messageDigest = null;
@@ -415,33 +455,31 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			messageDigest = MessageDigest.getInstance("SHA-256");
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
-			
+
 		}
 		messageDigest.update(userRegistrationDto.getPassword().getBytes());
 		String stringHash = new String(messageDigest.digest());
 		userRegistrationDto.setPassword(stringHash);
 		Session session = sf.openSession();
 		try {
-		
+
 			session.beginTransaction();
-		
+
 			session.save(userRegistrationDto);
-		
+
 			session.getTransaction().commit();
-			
+
 			session.close();
 			return true;
-			}
-		catch(Exception ex)
-		{
+		} catch (Exception ex) {
 			session.getTransaction().rollback();
-		}
-		finally {
+		} finally {
 			session.close();
 		}
 		return false;
 	}
 
+	// verified on 20/04/24
 	@Override
 	public SignUp signIn(SignUp userRegistrationDto) {
 		MessageDigest messageDigest = null;
@@ -455,293 +493,301 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		String stringHash = new String(messageDigest.digest());
 		userRegistrationDto.setPassword(stringHash);
 		Session session = sf.openSession();
-		
+
 		try {
-		
+
 			session.beginTransaction();
-			
+
 			Query query = session.createQuery("from SIGNUP_ENTITY where pbId = :c1 and password = :c2");
-			
+
 			query.setString("c1", userRegistrationDto.getPbId());
 			query.setString("c2", userRegistrationDto.getPassword());
-			
+
 			SignUp obj = (SignUp) query.getSingleResult();
-		
+
 			session.getTransaction().commit();
-			
+
 			session.close();
 			return obj;
-			}
-		catch(Exception ex)
-		{
+		} catch (Exception ex) {
 			session.getTransaction().rollback();
-			
-		}
-		finally {
+
+		} finally {
 			session.close();
-			
+
 		}
 		return null;
 	}
 
+	// verified on 20/04/24
 	@Override
-	public boolean saveEmployee(Employee emp) {
+	public FullDataRegistration saveEmployee(Employee emp) {
+		Date date = new Date();
+		LocalDateTime myDateObj = LocalDateTime.now();
+		System.out.println("Before formatting: " + myDateObj);
+		DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		String dateToday = myDateObj.format(myFormatObj);
+		emp.setDate(date);
+		emp.setTime(date);
+		FullDataRegistration fullData = new FullDataRegistration();
 		Session session = sf.openSession();
 		emp.setProgramCode(emp.getProgramCode().toLowerCase());
 		try {
-		
+
 			session.beginTransaction();
-			session.save(emp);
+			session.saveOrUpdate(emp);
 
+			// session.getTransaction().commit();
+
+			StringBuilder sql = new StringBuilder();
+
+			sql.append("select * from employee_table where registered_date >= '" + dateToday
+					+ "' and registered_date <= '" + dateToday + "' and is_valid=1 order by registered_time desc");
+
+			List<EmployeeData> allemployeesData = new ArrayList<>();
+			SQLQuery query = session.createSQLQuery(sql.toString());
+			List<Object[]> rows = query.list();
 			session.getTransaction().commit();
+			session.close();
+			for (Object[] row : rows) {
 
-			session.close();
-			return true;
+				EmployeeData employee = new EmployeeData(row[3].toString(), row[0].toString(),
+						new RfId(row[7].toString()), row[1].toString(), row[2].toString(), row[4].toString(),
+						row[5].toString(), row[9].toString(), row[8].toString(), "Registration",
+						"Attendance no marked");
+				allemployeesData.add(employee);
 			}
-		catch(Exception ex)
-		{
+			fullData.setEmployeeRegisteredToday(allemployeesData);
+			fullData.setEmployeeRegisteredStatus(true);
+			return fullData;
+		} catch (Exception ex) {
 			session.getTransaction().rollback();
-			try {
-				
-				
-				session.beginTransaction();
-		        StringBuilder sql = new StringBuilder();
-		        
-		        sql.append("UPDATE EMPLOYEE_TABLE SET designation = '"+emp.getDesignation()+"', division = '"+emp.getDivision()+"', name = '"+emp.getName()+"', phone_no = '"+emp.getPhoneNo()+"', program_code = '"+emp.getProgramCode()+"', is_valid = true , reff_id_reff_id = '"+emp.getReffId().getReffId()+"'  WHERE pb_id = '"+emp.getPbId()+"'");
-				
-				SQLQuery query = session.createSQLQuery(sql.toString());
-				int ans = query.executeUpdate();
-				session.getTransaction().commit();
-				session.close();
-				return true;
-				}
-				catch(Exception ex1)
-				{
-					session.getTransaction().rollback();
-				}
-		}
-		finally {
+
+		} finally {
 			session.close();
-			
+
 		}
-		return false;
+		fullData.setEmployeeRegisteredStatus(false);
+		return fullData;
 	}
 
 	@Override
 	public PieGraphData getGraphDataByFilter(Customfilter filter) {
 		Session session = sf.openSession();
-		String count="";
-		Object o=null;
+		String count = "";
+		Object o = null;
 		try {
 			session.beginTransaction();
-		 StringBuilder sql = new StringBuilder();
-	        
-	        sql.append("select table1.pb_id,table1.name,table1.designation,table1.division,table1.phone_no,table1.program_code,table1.date from\r\n"
-	        		+ "((select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, min(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'07:30:00' and punch.time <'09:00:00' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp) as table1\r\n"
-	        		+ " inner join \r\n"
-	        		+ " (select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, max(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'15:30:00' and punch.time <'23:59:59' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp) as table2 \r\n"
-	        		+ " on table1.pb_id = table2.pb_id and table2.date=table2.date) where (table1.date>= '"+filter.getDate()+"' and table1.date<= '"+filter.getEndDate()+"') and(table2.date>= '"+filter.getDate()+"' and table2.date<= '"+filter.getEndDate()+"') and (table3.date>= '"+filter.getDate()+"' and table3.date<= '"+filter.getEndDate()+"')");
-			if(!filter.getProgramCode().equals("")) {
-				sql.append(" and (table1.program_code= '"+filter.getProgramCode()+"' and table2.program_code= '"+filter.getProgramCode()+"' and table3.program_code= '"+filter.getProgramCode()+"')");
+			StringBuilder sql = new StringBuilder();
+
+			sql.append(
+					"select table1.pb_id,table1.name,table1.designation,table1.division,table1.phone_no,table1.program_code,table1.date from\r\n"
+							+ "((select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, min(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'07:30:00' and punch.time <'09:00:00' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp) as table1\r\n"
+							+ " inner join \r\n"
+							+ " (select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, max(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'15:30:00' and punch.time <'23:59:59' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp) as table2 \r\n"
+							+ " on table1.pb_id = table2.pb_id and table2.date=table2.date) where (table1.date>= '"
+							+ filter.getDate() + "' and table1.date<= '" + filter.getEndDate()
+							+ "') and(table2.date>= '" + filter.getDate() + "' and table2.date<= '"
+							+ filter.getEndDate() + "') and (table3.date>= '" + filter.getDate()
+							+ "' and table3.date<= '" + filter.getEndDate() + "')");
+			if (!filter.getProgramCode().equals("")) {
+				sql.append(" and (table1.program_code= '" + filter.getProgramCode() + "' and table2.program_code= '"
+						+ filter.getProgramCode() + "' and table3.program_code= '" + filter.getProgramCode() + "')");
 			}
-			if(!filter.getPbId().equals("")) {
-				sql.append(" and (table1.pb_id= '"+filter.getPbId()+"' and table2.pb_id= '"+filter.getPbId()+"' and table3.pb_id= '"+filter.getPbId()+"')");
+			if (!filter.getPbId().equals("")) {
+				sql.append(" and (table1.pb_id= '" + filter.getPbId() + "' and table2.pb_id= '" + filter.getPbId()
+						+ "' and table3.pb_id= '" + filter.getPbId() + "')");
 			}
-	        
-	        SQLQuery query = session.createSQLQuery(sql.toString());
+
+			SQLQuery query = session.createSQLQuery(sql.toString());
 			List<Object[]> rows = query.list();
 			session.getTransaction().commit();
-				
-				 o=rows.get(0);
-				System.out.print(o);
-				session.close();
 
-		}
-		catch(Exception ex) {
+			o = rows.get(0);
+			System.out.print(o);
+			session.close();
+
+		} catch (Exception ex) {
 			session.getTransaction().rollback();
-				}
-		finally {
+		} finally {
 			session.close();
 		}
-		
-		
-		 session = sf.openSession();
+
+		session = sf.openSession();
 		List<EmployeeData> employeesData = new ArrayList<EmployeeData>();
 		try {
 			session.beginTransaction();
-		 StringBuilder sql = new StringBuilder();
-	        
-	        sql.append("select * from employee_table where is_valid = '1'");
-			if(!filter.getProgramCode().equals("")) {
-				sql.append(" and (program_code= '"+filter.getProgramCode()+"')");
+			StringBuilder sql = new StringBuilder();
+
+			sql.append("select * from employee_table where is_valid = '1'");
+			if (!filter.getProgramCode().equals("")) {
+				sql.append(" and (program_code= '" + filter.getProgramCode() + "')");
 			}
-			if(!filter.getPbId().equals("")) {
-				sql.append(" and pb_id = '"+filter.getPbId()+"'");
+			if (!filter.getPbId().equals("")) {
+				sql.append(" and pb_id = '" + filter.getPbId() + "'");
 			}
 
-	        
-	        
-	        SQLQuery query = session.createSQLQuery(sql.toString());
+			SQLQuery query = session.createSQLQuery(sql.toString());
 			List<Object[]> rows = query.list();
 			session.getTransaction().commit();
 			session.close();
-			for(Object[] row : rows){
-				
+			for (Object[] row : rows) {
+
 				EmployeeData emp = new EmployeeData();
 				employeesData.add(emp);
 			}
-				
-		}
-		catch(Exception ex) {
-			session.getTransaction().rollback();	}
-		finally {
+
+		} catch (Exception ex) {
+			session.getTransaction().rollback();
+		} finally {
 			session.close();
 		}
-			
-			if(o != null)
-				return new PieGraphData(employeesData.size()-Integer.parseInt(o.toString()),Integer.parseInt(o.toString()));
-			else {
-				return new PieGraphData(employeesData.size()-0,0);
-			}
+
+		if (o != null)
+			return new PieGraphData(employeesData.size() - Integer.parseInt(o.toString()),
+					Integer.parseInt(o.toString()));
+		else {
+			return new PieGraphData(employeesData.size() - 0, 0);
+		}
 	}
-	
 
 	@Override
 	public List<BarGraphData> getBarGraphDataByFilter(Customfilter filter) {
 		// TODO Auto-generated method stub
 		Session session = sf.openSession();
-        StringBuilder sql = new StringBuilder();
-        List<EmployeeData> employeesData=null;
-        List<BarGraphData> graphDataList = new ArrayList<>();
- 
-        
-        try {
-        	
-        	session.beginTransaction();
-        
-        sql.append("select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, min(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'07:30:00' and punch.time <'09:00:00' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
-		
-		if(!filter.getDate().equals("")) {
-			sql.append(" and (t2.date >= '"+filter.getDate()+"' and t2.date <= '"+filter.getEndDate()+"')");
-		}
-		if(!filter.getProgramCode().equals("")) {
-			sql.append(" and t1.program_code = '"+filter.getProgramCode()+"'");
-		}
-		if(!filter.getPbId().equals("")) {
-			sql.append(" and t1.pb_id = '"+filter.getPbId()+"'");
+		StringBuilder sql = new StringBuilder();
+		List<EmployeeData> employeesData = null;
+		List<BarGraphData> graphDataList = new ArrayList<>();
+
+		try {
+
+			session.beginTransaction();
+
+			sql.append(
+					"select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, min(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'07:30:00' and punch.time <'09:00:00' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
+
+			if (!filter.getDate().equals("")) {
+				sql.append(" and (t2.date >= '" + filter.getDate() + "' and t2.date <= '" + filter.getEndDate() + "')");
+			}
+			if (!filter.getProgramCode().equals("")) {
+				sql.append(" and t1.program_code = '" + filter.getProgramCode() + "'");
+			}
+			if (!filter.getPbId().equals("")) {
+				sql.append(" and t1.pb_id = '" + filter.getPbId() + "'");
+			}
+
+			employeesData = new ArrayList<EmployeeData>();
+			SQLQuery query = session.createSQLQuery(sql.toString());
+			List<Object[]> rows = query.list();
+			for (Object[] row : rows) {
+
+				EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), null, row[1].toString(),
+						row[2].toString(), row[4].toString(), row[5].toString(), row[9].toString(), row[10].toString(),
+						row[11].toString());
+				employeesData.add(emp);
+			}
+
+			graphDataList.add(new BarGraphData("7:30am to 9:00am", employeesData.size()));
+
+			sql = new StringBuilder();
+
+			sql.append(
+					"select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, min(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'12:00:00' and punch.time <'13:30:00' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
+
+			if (!filter.getDate().equals("")) {
+				sql.append(" and (t2.date >= '" + filter.getDate() + "' and t2.date <= '" + filter.getEndDate() + "')");
+			}
+			if (!filter.getProgramCode().equals("")) {
+				sql.append(" and t1.program_code = '" + filter.getProgramCode() + "'");
+			}
+			if (!filter.getPbId().equals("")) {
+				sql.append(" and t1.pb_id = '" + filter.getPbId() + "'");
+			}
+
+			employeesData = new ArrayList<EmployeeData>();
+			query = session.createSQLQuery(sql.toString());
+			rows = query.list();
+			for (Object[] row : rows) {
+
+				EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), null, row[1].toString(),
+						row[2].toString(), row[4].toString(), row[5].toString(), row[9].toString(), row[10].toString(),
+						row[11].toString());
+
+				employeesData.add(emp);
+			}
+
+			graphDataList.add(new BarGraphData("12:00 to 1:30pm", employeesData.size()));
+
+			sql = new StringBuilder();
+
+			sql.append(
+					"select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, max(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'15:30:00' and punch.time <'23:59:59' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
+
+			if (!filter.getDate().equals("")) {
+				sql.append(" and (t2.date >= '" + filter.getDate() + "' and t2.date <= '" + filter.getEndDate() + "')");
+			}
+			if (!filter.getProgramCode().equals("")) {
+				sql.append(" and t1.program_code = '" + filter.getProgramCode() + "'");
+			}
+			if (!filter.getPbId().equals("")) {
+				sql.append(" and t1.pb_id = '" + filter.getPbId() + "'");
+			}
+
+			employeesData = new ArrayList<EmployeeData>();
+
+			query = session.createSQLQuery(sql.toString());
+			rows = query.list();
+			session.getTransaction().commit();
+			session.close();
+			for (Object[] row : rows) {
+
+				EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), null, row[1].toString(),
+						row[2].toString(), row[4].toString(), row[5].toString(), row[9].toString(), row[10].toString(),
+						row[11].toString());
+
+				employeesData.add(emp);
+			}
+
+			graphDataList.add(new BarGraphData("after 3:30pm", employeesData.size()));
+		} catch (Exception ex) {
+			session.getTransaction().rollback();
+		} finally {
+			session.close();
 		}
 
-		employeesData = new ArrayList<EmployeeData>();
-		SQLQuery query = session.createSQLQuery(sql.toString());
-		List<Object[]> rows = query.list();
-		for(Object[] row : rows){
-			
-			EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), null, row[1].toString(), row[2].toString(), row[4].toString(),row[5].toString(), row[9].toString(), row[10].toString(),row[11].toString());
-			employeesData.add(emp);
-		}
-		
-		
-		graphDataList.add(new BarGraphData("7:30am to 9:00am", employeesData.size()));
-		
-         sql = new StringBuilder();
-        
-        sql.append("select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, min(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'12:00:00' and punch.time <'13:30:00' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
-		
-		if(!filter.getDate().equals("")) {
-			sql.append(" and (t2.date >= '"+filter.getDate()+"' and t2.date <= '"+filter.getEndDate()+"')");
-		}
-		if(!filter.getProgramCode().equals("")) {
-			sql.append(" and t1.program_code = '"+filter.getProgramCode()+"'");
-		}
-		if(!filter.getPbId().equals("")) {
-			sql.append(" and t1.pb_id = '"+filter.getPbId()+"'");
-		}
-
-		employeesData = new ArrayList<EmployeeData>();
-		 query = session.createSQLQuery(sql.toString());
-		 rows = query.list();
-		for(Object[] row : rows){
-			
-			EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), null, row[1].toString(), row[2].toString(), row[4].toString(),row[5].toString(), row[9].toString(), row[10].toString(),row[11].toString());
-	
-			employeesData.add(emp);
-		}
-		
-		graphDataList.add(new BarGraphData("12:00 to 1:30pm", employeesData.size()));
-		
-		
-         sql = new StringBuilder();
-        
-        sql.append("select * from employee_table as t1 join (select emp.pb_id  as pb_id_temp, max(punch.time) as time,punch.date,punch.punch_slot from employee_table emp join punch_xref_table punch  where emp.pb_id = punch.pb_id and punch.time>'15:30:00' and punch.time <'23:59:59' group by emp.pb_id,punch.date) as t2 where t1.pb_id = t2.pb_id_temp ");
-		
-		if(!filter.getDate().equals("")) {
-			sql.append(" and (t2.date >= '"+filter.getDate()+"' and t2.date <= '"+filter.getEndDate()+"')");
-		}
-		if(!filter.getProgramCode().equals("")) {
-			sql.append(" and t1.program_code = '"+filter.getProgramCode()+"'");
-		}
-		if(!filter.getPbId().equals("")) {
-			sql.append(" and t1.pb_id = '"+filter.getPbId()+"'");
-		}
-
-		employeesData = new ArrayList<EmployeeData>();
-		
-		 query = session.createSQLQuery(sql.toString());
-		rows = query.list();
-		session.getTransaction().commit();
-		session.close();
-		for(Object[] row : rows){
-			
-			EmployeeData emp = new EmployeeData(row[3].toString(), row[0].toString(), null, row[1].toString(), row[2].toString(), row[4].toString(),row[5].toString(), row[9].toString(), row[10].toString(),row[11].toString());
-			
-			employeesData.add(emp);
-		}
-		
-		graphDataList.add(new BarGraphData("after 3:30pm", employeesData.size()));
-        }
-        catch(Exception ex) {
-        	session.getTransaction().rollback();
-        }
-        finally {
-        	session.close();
-        }
- 
-		
 		return graphDataList;
 	}
 
 	@Override
 	public String getCandidateByRef(String reff_id) {
-return "";
+		return "";
 
-}
+	}
 
+//verified on 20/04/24
 	@Override
 	public List<ProgramCodes> getProgramCodes() {
 		// TODO Auto-generated method stub
 		Session session = sf.openSession();
-		String sql = "SELECT distinct(program_code) FROM employee_table";
+		String sql = "SELECT distinct(program_code) FROM employee_table order by registered_date desc";
 		List<Object[]> rows;
 		List<ProgramCodes> pragramCodes = new ArrayList<ProgramCodes>();
-		 try {
-	        	
-	        	session.beginTransaction();
-	        	SQLQuery query = session.createSQLQuery(sql.toString());
+		try {
+
+			session.beginTransaction();
+			SQLQuery query = session.createSQLQuery(sql.toString());
 			rows = query.list();
 			session.getTransaction().commit();
-			for(Object row : rows){
-				pragramCodes.add(new ProgramCodes(row.toString(),""));
+			for (Object row : rows) {
+				pragramCodes.add(new ProgramCodes(row.toString(), ""));
 			}
 			session.close();
-		 }
-		 catch(Exception ex)
-		 {
-			 session.getTransaction().rollback();
-		 }
-		 finally {
-			 session.close();
-			 
-		 }
+		} catch (Exception ex) {
+			session.getTransaction().rollback();
+		} finally {
+			session.close();
+
+		}
 		return pragramCodes;
 	}
 

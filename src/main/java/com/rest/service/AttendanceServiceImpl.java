@@ -10,6 +10,7 @@ import com.rest.models.BarGraphData;
 import com.rest.models.Customfilter;
 import com.rest.models.Employee;
 import com.rest.models.EmployeeData;
+import com.rest.models.FullDataRegistration;
 import com.rest.models.FullUIDataObject;
 import com.rest.models.PieGraphData;
 import com.rest.models.ProgramCodes;
@@ -23,12 +24,8 @@ public class AttendanceServiceImpl implements AttendanceService {
 	@Autowired
 	AttendanceDao dao;
 
-
-
-
-
 	@Override
-	public boolean saveEmployee(Employee emp) {
+	public FullDataRegistration saveEmployee(Employee emp) {
 		// TODO Auto-generated method stub
 		return dao.saveEmployee(emp);
 	}
@@ -36,7 +33,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 	@Override
 	public boolean savepunchIn(String reffId, String pbId) {
 		// TODO Auto-generated method stub
-		return dao.savePunchIn(reffId,pbId);
+		return dao.savePunchIn(reffId, pbId);
 	}
 
 	@Override
@@ -48,7 +45,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 	@Override
 	public FullUIDataObject getDataByFilter(Customfilter filter) {
 		// TODO Auto-generated method stub
-		 return dao.getDataByFilter(filter);
+		return dao.getDataByFilter(filter);
 	}
 
 	@Override
@@ -68,6 +65,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 		// TODO Auto-generated method stub
 		return dao.makeEmployeePunchInvalidIfExist(emp);
 	}
+
 	@Override
 	public boolean signUp(SignUp userRegistrationDto) {
 		// TODO Auto-generated method stub
@@ -109,7 +107,5 @@ public class AttendanceServiceImpl implements AttendanceService {
 		// TODO Auto-generated method stub
 		return dao.getAttendanceDataByFilter(filter);
 	}
-
-
 
 }

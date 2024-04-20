@@ -4,7 +4,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-@Entity(name="RFID_ENTITY")
+
+@Entity(name = "RFID_ENTITY")
 @Table(name = "RFID_TABLE")
 public class RfId {
 	public RfId(String reffId) {
@@ -13,9 +14,8 @@ public class RfId {
 	}
 
 	@Id
-	@Column(name="REFF_ID")
+	@Column(name = "REFF_ID")
 	private String reffId;
-
 
 	public RfId() {
 	}
@@ -33,6 +33,4 @@ public class RfId {
 		return "RfId [reffId=" + reffId + "]";
 	}
 
-	
-	
 }

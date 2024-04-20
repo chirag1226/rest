@@ -6,6 +6,7 @@ import com.rest.models.BarGraphData;
 import com.rest.models.Customfilter;
 import com.rest.models.Employee;
 import com.rest.models.EmployeeData;
+import com.rest.models.FullDataRegistration;
 import com.rest.models.FullUIDataObject;
 import com.rest.models.PieGraphData;
 import com.rest.models.ProgramCodes;
@@ -15,8 +16,7 @@ import com.rest.models.SignUp;
 
 public interface AttendanceDao {
 
-
-	public boolean saveEmployee(Employee emp);
+	public FullDataRegistration saveEmployee(Employee emp);
 
 	public boolean savePunchIn(String reffId, String pbId);
 
