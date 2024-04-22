@@ -121,10 +121,14 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		List<EmployeeData> employeesDataFirst = new ArrayList<>();
 		List<EmployeeData> employeesDataSecond = new ArrayList<>();
 		List<EmployeeData> employeesDataThird = new ArrayList<>();
+		List<EmployeeData> employeesDataIntersectionFirstSecond = new ArrayList<>();
+		List<EmployeeData> employeesDataIntersectionSecondThird = new ArrayList<>();
+		List<EmployeeData> employeesDataIntersectionThirdFirst = new ArrayList<>();
 		List<EmployeeData> employeesData1stHalfAttendance = new ArrayList<>();
 		List<EmployeeData> employeesDataFullAttendance = new ArrayList<>();
 		List<EmployeeData> employeesData2ndHalfAttendance = new ArrayList<>();
 		List<EmployeeData> employeesDataAbsentAttendance = new ArrayList<>();
+		List<EmployeeData> employeesDataSinglePunchAttendance = new ArrayList<>();
 		List<EmployeeData> employeesPunchGridData = null;
 		List<EmployeeData> employeesAttendanceGridData = new ArrayList<>();
 		List<EmployeeData> allemployeesData = new ArrayList<>();
@@ -215,6 +219,27 @@ public class AttendanceDaoImpl implements AttendanceDao {
 				employeesDataThird.add(emp);
 				employeesPunchGridData.add(emp);
 			}
+			
+			// single punch code should be before if (filter.isAllData())
+			
+			employeesDataIntersectionFirstSecond = new ArrayList<>(employeesDataFirst);
+			employeesDataIntersectionFirstSecond.retainAll(employeesDataSecond);
+			
+			employeesDataIntersectionSecondThird = new ArrayList<>(employeesDataSecond);
+			employeesDataIntersectionSecondThird.retainAll(employeesDataThird);
+			
+			employeesDataIntersectionThirdFirst = new ArrayList<>(employeesDataThird);
+			employeesDataIntersectionThirdFirst.retainAll(employeesDataFirst);
+			
+			
+			employeesDataSinglePunchAttendance =new ArrayList<>(employeesPunchGridData);
+			employeesDataSinglePunchAttendance.removeAll(employeesDataIntersectionFirstSecond);
+			employeesDataSinglePunchAttendance.removeAll(employeesDataIntersectionSecondThird);
+			employeesDataSinglePunchAttendance.removeAll(employeesDataIntersectionThirdFirst);
+			
+
+			
+			
 
 			if (filter.isAllData()) {
 				sql = new StringBuilder();
@@ -308,6 +333,9 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		employeesDataAbsentAttendance.removeAll(employeesDataFullAttendance);
 		employeesDataAbsentAttendance.removeAll(employeesData1stHalfAttendance);
 		employeesDataAbsentAttendance.removeAll(employeesData2ndHalfAttendance);
+		employeesDataAbsentAttendance.removeAll(employeesDataSinglePunchAttendance);
+		
+		
 
 		for (int i = 0; i < employeesData1stHalfAttendance.size(); i++) {
 			employeesData1stHalfAttendance.get(i).setAttendance("Half Day");
@@ -326,25 +354,25 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			employeesAttendanceGridData.add(employeesDataAbsentAttendance.get(i));
 		}
 
+		for(int i=0;i<employeesDataSinglePunchAttendance.size();i++) {
+			employeesDataSinglePunchAttendance.get(i).setAttendance("Single Punch");
+			employeesAttendanceGridData.add(employeesDataSinglePunchAttendance.get(i));
+		}
 		// finding absents
 
 		// each emp
-		for (int i = 0; i < allemployeesData.size(); i++) {
-			allemployeesData.get(i).setAttendance("Absent");
-			// each day
-			for (int j = 0; j < 3; j++) {
-				// check 1st punch
-				for (int k = 0; k < employeesDataFirst.size(); k++) {
-					if (allemployeesData.get(i).equals(employeesDataFirst.get(k))) {
-						allemployeesData.get(i).setAttendance("Absent");
-					}
-				}
-
-				// check 2nd punch
-
-				// check 3rd punch
-			}
-		}
+		/*
+		 * for (int i = 0; i < allemployeesData.size(); i++) {
+		 * allemployeesData.get(i).setAttendance("Absent"); // each day for (int j = 0;
+		 * j < 3; j++) { // check 1st punch for (int k = 0; k <
+		 * employeesDataFirst.size(); k++) { if
+		 * (allemployeesData.get(i).equals(employeesDataFirst.get(k))) {
+		 * allemployeesData.get(i).setAttendance("Absent"); } }
+		 * 
+		 * // check 2nd punch
+		 * 
+		 * // check 3rd punch } }
+		 */
 
 		graphDataList.add(new BarGraphData("7:30am to 9:00am", employeesDataFirst.size()));
 		graphDataList.add(new BarGraphData("12:00 to 1:30pm", employeesDataSecond.size()));
@@ -360,7 +388,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		uiData.setBarGraphData(graphDataList);
 		uiData.setPieGraphData(
 				new PieGraphData(employeesDataAbsentAttendance.size() + employeesData1stHalfAttendance.size()
-						+ employeesData2ndHalfAttendance.size(), employeesDataFullAttendance.size()));
+						+ employeesData2ndHalfAttendance.size()+employeesDataSinglePunchAttendance.size(), employeesDataFullAttendance.size()));
 		uiData.setEmployeesAttendanceGridData(employeesAttendanceGridData);
 		return uiData;
 	}
