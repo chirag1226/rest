@@ -67,7 +67,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			} else if (thirdLower.compareTo(current) <= 0) {
 				punchSlot = "Punch Out";
 			} else {
-				punchSlot = "Invalid Punch";
+				punchSlot = "Late Punch";
 			}
 
 			session.save(new Punch_xref(new RfId(reffId), date, date, date, true, punchSlot, pbId));
@@ -148,6 +148,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			if (!filter.getProgramCode().equals("")) {
 				sql.append(" and t1.program_code = '" + filter.getProgramCode() + "'");
 			}
+			sql.append("  order by date,time desc");
 			employeesPunchGridData = new ArrayList<>();
 			SQLQuery query = session.createSQLQuery(sql.toString());
 			List<Object[]> rows = query.list();
@@ -174,7 +175,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			if (!filter.getProgramCode().equals("")) {
 				sql.append(" and t1.program_code = '" + filter.getProgramCode() + "'");
 			}
-
+			sql.append("  order by date,time desc");
 			query = session.createSQLQuery(sql.toString());
 			rows = query.list();
 			for (Object[] row : rows) {
@@ -201,7 +202,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			if (!filter.getProgramCode().equals("")) {
 				sql.append(" and t1.program_code = '" + filter.getProgramCode() + "'");
 			}
-
+			sql.append("  order by date,time desc");
 			query = session.createSQLQuery(sql.toString());
 			rows = query.list();
 			// session.getTransaction().commit();
@@ -230,6 +231,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 				if (!filter.getProgramCode().equals("")) {
 					sql.append(" and t1.program_code = '" + filter.getProgramCode() + "'");
 				}
+				sql.append("  order by date,time desc");
 				employeesPunchGridData = new ArrayList<EmployeeData>();
 				query = session.createSQLQuery(sql.toString());
 				rows = query.list();
@@ -253,7 +255,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			if (!filter.getPbId().equals("")) {
 				sql.append(" and pb_id = '" + filter.getPbId() + "'");
 			}
-
+			sql.append("  order by registered_date,registered_time desc");
 			query = session.createSQLQuery(sql.toString());
 			rows = query.list();
 			session.getTransaction().commit();
@@ -544,7 +546,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			StringBuilder sql = new StringBuilder();
 
 			sql.append("select * from employee_table where registered_date >= '" + dateToday
-					+ "' and registered_date <= '" + dateToday + "' and is_valid=1 order by registered_time desc");
+					+ "' and registered_date <= '" + dateToday + "' and is_valid=1 and program_code = '"+emp.getProgramCode()+"' order by registered_time desc");
 
 			List<EmployeeData> allemployeesData = new ArrayList<>();
 			SQLQuery query = session.createSQLQuery(sql.toString());
