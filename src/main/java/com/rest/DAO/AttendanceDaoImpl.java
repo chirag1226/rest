@@ -389,7 +389,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		uiData.setEmployeesDataAbsentAttendance(employeesDataAbsentAttendance);
 		uiData.setEmployeesDataSinglePunchAttendance(employeesDataSinglePunchAttendance);
 		uiData.setPieGraphData(
-				new PieGraphData(employeesDataAbsentAttendance.size(), employeesDataFullAttendance.size(),employeesDataSinglePunchAttendance.size(),(employeesData1stHalfAttendance.size()+employeesData1stHalfAttendance.size())));
+				new PieGraphData(employeesDataAbsentAttendance.size(), employeesDataFullAttendance.size(),employeesDataSinglePunchAttendance.size(),(employeesData1stHalfAttendance.size()+employeesData2ndHalfAttendance.size())));
 		uiData.setEmployeesAttendanceGridData(employeesAttendanceGridData);
 		return uiData;
 	}
