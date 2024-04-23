@@ -129,7 +129,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		List<EmployeeData> employeesData2ndHalfAttendance = new ArrayList<>();
 		List<EmployeeData> employeesDataAbsentAttendance = new ArrayList<>();
 		List<EmployeeData> employeesDataSinglePunchAttendance = new ArrayList<>();
-		List<EmployeeData> employeesPunchGridData = null;
+		List<EmployeeData> employeesPunchGridData = new ArrayList<>();
 		List<EmployeeData> employeesAttendanceGridData = new ArrayList<>();
 		List<EmployeeData> allemployeesData = new ArrayList<>();
 		List<BarGraphData> graphDataList = new ArrayList<>();
@@ -386,9 +386,10 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		uiData.setEmployeesPunchGridData(employeesPunchGridData);
 		uiData.setAllemployeesData(allemployeesData);
 		uiData.setBarGraphData(graphDataList);
+		uiData.setEmployeesDataAbsentAttendance(employeesDataAbsentAttendance);
+		uiData.setEmployeesDataSinglePunchAttendance(employeesDataSinglePunchAttendance);
 		uiData.setPieGraphData(
-				new PieGraphData(employeesDataAbsentAttendance.size() + employeesData1stHalfAttendance.size()
-						+ employeesData2ndHalfAttendance.size()+employeesDataSinglePunchAttendance.size(), employeesDataFullAttendance.size()));
+				new PieGraphData(employeesDataAbsentAttendance.size(), employeesDataFullAttendance.size(),employeesDataSinglePunchAttendance.size(),(employeesData1stHalfAttendance.size()+employeesData1stHalfAttendance.size())));
 		uiData.setEmployeesAttendanceGridData(employeesAttendanceGridData);
 		return uiData;
 	}

@@ -13,6 +13,24 @@ public class FullUIDataObject {
 	private List<BarGraphData> barGraphData;
 	private PieGraphData pieGraphData;
 	private List<EmployeeData> employeesAttendanceGridData;
+	private List<EmployeeData> employeesDataAbsentAttendance;
+	private List<EmployeeData> employeesDataSinglePunchAttendance;
+
+	public List<EmployeeData> getEmployeesDataAbsentAttendance() {
+		return employeesDataAbsentAttendance;
+	}
+
+	public void setEmployeesDataAbsentAttendance(List<EmployeeData> employeesDataAbsentAttendance) {
+		this.employeesDataAbsentAttendance = employeesDataAbsentAttendance;
+	}
+
+	public List<EmployeeData> getEmployeesDataSinglePunchAttendance() {
+		return employeesDataSinglePunchAttendance;
+	}
+
+	public void setEmployeesDataSinglePunchAttendance(List<EmployeeData> employeesDataSinglePunchAttendance) {
+		this.employeesDataSinglePunchAttendance = employeesDataSinglePunchAttendance;
+	}
 
 	public List<EmployeeData> getEmployeesAttendanceGridData() {
 		return employeesAttendanceGridData;

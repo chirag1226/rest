@@ -35,5 +35,34 @@ public class PieGraphData {
 	}
 
 	private int present;
+	
+	public PieGraphData(int absent, int present, int singlePunch, int halfDay) {
+		super();
+		this.absent = absent;
+		this.present = present;
+		this.singlePunch = singlePunch;
+		this.halfDay = halfDay;
+	}
+
+	private int singlePunch;
+	
+	private int halfDay;
+
+	public int getSinglePunch() {
+		return singlePunch;
+	}
+
+	public void setSinglePunch(int singlePunch) {
+		this.singlePunch = singlePunch;
+	}
+
+	public int getHalfDay() {
+		return halfDay;
+	}
+
+	public void setHalfDay(int halfDay) {
+		this.halfDay = halfDay;
+	}
+	
 
 }
