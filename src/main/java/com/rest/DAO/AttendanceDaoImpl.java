@@ -244,18 +244,18 @@ public class AttendanceDaoImpl implements AttendanceDao {
 				
 				pdfGenerateReport obj = new pdfGenerateReport(employeesPunchGridData.get(i).getPbId(), employeesPunchGridData.get(i).getName(), employeesPunchGridData.get(i).getDesignation(), employeesPunchGridData.get(i).getDivision());
 				for(int j=0;j<employeesPunchGridData.size();j++) {
-					if(employeesPunchGridData.get(i).equals(employeesPunchGridData.get(j)) && employeesPunchGridData.get(j).getAttendance().equals("Forenoon Punch In")) {
+					if(employeesPunchGridData.get(i).equals(employeesPunchGridData.get(j)) && employeesPunchGridData.get(j).getPunchSlot().equals("Forenoon Punch In")) {
 						obj.setDate(employeesPunchGridData.get(j).getDate());
 						obj.setInPunch(employeesPunchGridData.get(j).getTime());
 					}
 					
-					if(employeesPunchGridData.get(i).equals(employeesPunchGridData.get(j)) && employeesPunchGridData.get(j).getAttendance().equals("Punch Out")) {
+					if(employeesPunchGridData.get(i).equals(employeesPunchGridData.get(j)) && employeesPunchGridData.get(j).getPunchSlot().equals("Punch Out")) {
 						obj.setDate(employeesPunchGridData.get(j).getDate());
 						obj.setInPunch(employeesPunchGridData.get(j).getTime());
 					}
 				}
 				
-				if(employeesPunchGridData.get(i).getAttendance().equals("Forenoon Punch In")|| employeesPunchGridData.get(i).getAttendance().equals("Punch Out") )
+				if(employeesPunchGridData.get(i).getPunchSlot().equals("Forenoon Punch In")|| employeesPunchGridData.get(i).getPunchSlot().equals("Punch Out") )
 					{
 					pdfReport.add(obj);
 					}
