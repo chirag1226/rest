@@ -418,6 +418,40 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		//pdf data invalid punches
 		for(int i=0;i<employeesPunchGridData.size();i++) {
 			if(employeesPunchGridData.get(i).getPunchSlot().equals("Late Punch")) {
+				for(int j=0;j<pdfReport.size();j++) {
+					pdfGenerateReport obj = new pdfGenerateReport(employeesPunchGridData.get(i).getPbId(), employeesPunchGridData.get(i).getName(), employeesPunchGridData.get(i).getDesignation(), employeesPunchGridData.get(i).getDivision());
+					obj.setDate(employeesPunchGridData.get(i).getDate());
+					LocalTime midTime = LocalTime.parse("12:00:00");
+					LocalTime morningTime = LocalTime.parse("09:00:00");
+					LocalTime eveningTime = LocalTime.parse("15:30:00");
+					LocalTime current = LocalTime.parse(employeesPunchGridData.get(i).getTime());
+					
+					
+					
+					if(pdfReport.get(i).equals(obj)) {
+						if (morningTime.compareTo(current) < 0  && midTime.compareTo(current) > 0) {
+							pdfReport.get(i).setInPunch(employeesPunchGridData.get(i).getTime());
+						}
+						if (midTime.compareTo(current) < 0 && eveningTime.compareTo(current) > 0) {
+							pdfReport.get(i).setOutPunch(employeesPunchGridData.get(i).getTime());
+						}
+						
+						
+					}
+					else {
+						if (morningTime.compareTo(current) < 0  && midTime.compareTo(current) > 0) {
+							obj.setInPunch(employeesPunchGridData.get(i).getTime());
+						}
+						if (midTime.compareTo(current) < 0 && eveningTime.compareTo(current) > 0) {
+							obj.setOutPunch(employeesPunchGridData.get(i).getTime());
+						}
+						pdfReport.add(obj);
+					}
+				}
+				
+				
+				
+				
 				pdfGenerateReport obj = new pdfGenerateReport(employeesPunchGridData.get(i).getPbId(), employeesPunchGridData.get(i).getName(), employeesPunchGridData.get(i).getDesignation(), employeesPunchGridData.get(i).getDivision());
 				obj.setDate(employeesPunchGridData.get(i).getDate());
 				LocalTime midTime = LocalTime.parse("12:00:00");
