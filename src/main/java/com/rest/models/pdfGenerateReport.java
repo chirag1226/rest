@@ -21,6 +21,8 @@ public class pdfGenerateReport {
 		this.name = name;
 		this.designation = designation;
 		this.division = division;
+		this.inPunch="";
+		this.outPunch="";
 		
 
 	}
