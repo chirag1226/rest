@@ -415,6 +415,24 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		 * 
 		 * }
 		 */
+		//pdf data invalid punches
+		for(int i=0;i<employeesPunchGridData.size();i++) {
+			if(employeesPunchGridData.get(i).getPunchSlot().equals("Late Punch")) {
+				pdfGenerateReport obj = new pdfGenerateReport(employeesPunchGridData.get(i).getPbId(), employeesPunchGridData.get(i).getName(), employeesPunchGridData.get(i).getDesignation(), employeesPunchGridData.get(i).getDivision());
+				obj.setDate(employeesPunchGridData.get(i).getDate());
+				LocalTime midTime = LocalTime.parse("12:00:00");
+				LocalTime morningTime = LocalTime.parse("09:00:00");
+				LocalTime eveningTime = LocalTime.parse("15:30:00");
+				LocalTime current = LocalTime.parse(employeesPunchGridData.get(i).getTime());
+				if (midTime.compareTo(current) >= 0) {
+					obj.setInPunch(employeesPunchGridData.get(i).getTime());
+				}
+				if (midTime.compareTo(current) <= 0) {
+					obj.setOutPunch(employeesPunchGridData.get(i).getTime());
+				}
+				pdfReport.add(obj);
+			}
+		}
 		
 
 		graphDataList.add(new BarGraphData("7:30am to 9:00am", employeesDataFirst.size()));
