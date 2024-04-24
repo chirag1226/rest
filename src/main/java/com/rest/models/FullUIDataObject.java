@@ -15,6 +15,15 @@ public class FullUIDataObject {
 	private List<EmployeeData> employeesAttendanceGridData;
 	private List<EmployeeData> employeesDataAbsentAttendance;
 	private List<EmployeeData> employeesDataSinglePunchAttendance;
+	private List<pdfGenerateReport> pdfReport;
+
+	public List<pdfGenerateReport> getPdfReport() {
+		return pdfReport;
+	}
+
+	public void setPdfReport(List<pdfGenerateReport> pdfReport) {
+		this.pdfReport = pdfReport;
+	}
 
 	public List<EmployeeData> getEmployeesDataAbsentAttendance() {
 		return employeesDataAbsentAttendance;

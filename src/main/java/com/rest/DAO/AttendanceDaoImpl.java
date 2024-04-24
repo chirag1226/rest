@@ -33,6 +33,7 @@ import com.rest.models.PunchModel;
 import com.rest.models.Punch_xref;
 import com.rest.models.RfId;
 import com.rest.models.SignUp;
+import com.rest.models.pdfGenerateReport;
 
 @Repository
 public class AttendanceDaoImpl implements AttendanceDao {
@@ -133,6 +134,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		List<EmployeeData> employeesAttendanceGridData = new ArrayList<>();
 		List<EmployeeData> allemployeesData = new ArrayList<>();
 		List<BarGraphData> graphDataList = new ArrayList<>();
+		List<pdfGenerateReport> pdfReport =new ArrayList<>();
 
 		FullUIDataObject uiData = new FullUIDataObject();
 
@@ -237,7 +239,27 @@ public class AttendanceDaoImpl implements AttendanceDao {
 			employeesDataSinglePunchAttendance.removeAll(employeesDataIntersectionSecondThird);
 			employeesDataSinglePunchAttendance.removeAll(employeesDataIntersectionThirdFirst);
 			
-
+// should be before entire data fetch for pdf report
+			for(int i =0;i<employeesPunchGridData.size();i++) {
+				
+				pdfGenerateReport obj = new pdfGenerateReport(employeesPunchGridData.get(i).getPbId(), employeesPunchGridData.get(i).getName(), employeesPunchGridData.get(i).getDesignation(), employeesPunchGridData.get(i).getDivision());
+				for(int j=0;j<employeesPunchGridData.size();j++) {
+					if(employeesPunchGridData.get(i).equals(employeesPunchGridData.get(j)) && employeesPunchGridData.get(j).getAttendance().equals("Forenoon Punch In")) {
+						obj.setDate(employeesPunchGridData.get(j).getDate());
+						obj.setInPunch(employeesPunchGridData.get(j).getTime());
+					}
+					
+					if(employeesPunchGridData.get(i).equals(employeesPunchGridData.get(j)) && employeesPunchGridData.get(j).getAttendance().equals("Punch Out")) {
+						obj.setDate(employeesPunchGridData.get(j).getDate());
+						obj.setInPunch(employeesPunchGridData.get(j).getTime());
+					}
+				}
+				
+				if(employeesPunchGridData.get(i).getAttendance().equals("Forenoon Punch In")|| employeesPunchGridData.get(i).getAttendance().equals("Punch Out") )
+					{
+					pdfReport.add(obj);
+					}
+			}
 			
 			
 
@@ -374,6 +396,14 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		 * // check 3rd punch } }
 		 */
 
+//pdf data
+for(int i =0;i<employeesDataAbsentAttendance.size();i++) {
+	pdfGenerateReport obj = new pdfGenerateReport(employeesDataAbsentAttendance.get(i).getPbId(), employeesDataAbsentAttendance.get(i).getName(), employeesDataAbsentAttendance.get(i).getDesignation(), employeesDataAbsentAttendance.get(i).getDivision());
+	obj.setDate(employeesDataAbsentAttendance.get(i).getDate());
+	pdfReport.add(obj);
+}
+		
+
 		graphDataList.add(new BarGraphData("7:30am to 9:00am", employeesDataFirst.size()));
 		graphDataList.add(new BarGraphData("12:00 to 1:30pm", employeesDataSecond.size()));
 		graphDataList.add(new BarGraphData("after 3:30pm", employeesDataThird.size()));
@@ -391,6 +421,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		uiData.setPieGraphData(
 				new PieGraphData(employeesDataAbsentAttendance.size(), employeesDataFullAttendance.size(),employeesDataSinglePunchAttendance.size(),(employeesData1stHalfAttendance.size()+employeesData2ndHalfAttendance.size())));
 		uiData.setEmployeesAttendanceGridData(employeesAttendanceGridData);
+		uiData.setPdfReport(pdfReport);
 		return uiData;
 	}
 
