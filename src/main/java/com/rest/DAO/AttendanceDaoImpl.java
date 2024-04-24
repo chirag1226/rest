@@ -254,8 +254,14 @@ public class AttendanceDaoImpl implements AttendanceDao {
 						obj.setOutPunch(employeesPunchGridData.get(j).getTime());
 					}
 				}
+				boolean isPresent = false;
+				for(int k = 0;k<pdfReport.size();k++) {
+					if(pdfReport.get(k).equals(obj)) {
+						isPresent = true;
+					}
+				}
 				
-				if(employeesPunchGridData.get(i).getPunchSlot().equals("Forenoon Punch In")|| employeesPunchGridData.get(i).getPunchSlot().equals("Punch Out") )
+				if(!isPresent && (employeesPunchGridData.get(i).getPunchSlot().equals("Forenoon Punch In")|| employeesPunchGridData.get(i).getPunchSlot().equals("Punch Out") ))
 					{
 					pdfReport.add(obj);
 					}

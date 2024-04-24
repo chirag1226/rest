@@ -66,5 +66,19 @@ public class pdfGenerateReport {
 	public void setOutPunch(String outPunch) {
 		this.outPunch = outPunch;
 	}
+	@Override
+	public boolean equals(Object obj) {
+		pdfGenerateReport o = (pdfGenerateReport) obj;
+		if (obj == null)
+			return false;
+		if (this.date.equals(o.getDate()) && this.getPbId().equals(o.getPbId())) {
+			return true;
+		}
+		return false;
+	}
+
+	public Object clone() throws CloneNotSupportedException {
+		return super.clone();
+	}
 }
 
