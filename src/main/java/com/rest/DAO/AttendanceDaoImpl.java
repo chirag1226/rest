@@ -430,10 +430,10 @@ public class AttendanceDaoImpl implements AttendanceDao {
 				for(int j=0;j<pdfReport.size();j++) {
 					if(pdfReport.get(j).equals(obj)) {
 						isEqual=true;
-						if (morningTime.compareTo(current) < 0  && midTime.compareTo(current) > 0) {
+						if (morningTime.compareTo(current) < 0  && midTime.compareTo(current) > 0 && pdfReport.get(j).getInPunch().equals("")) {
 							pdfReport.get(j).setInPunch(employeesPunchGridData.get(i).getTime());
 						}
-						if (midTime.compareTo(current) < 0 && eveningTime.compareTo(current) > 0) {
+						if (midTime.compareTo(current) < 0 && eveningTime.compareTo(current) > 0 && pdfReport.get(j).getOutPunch().equals("")) {
 							pdfReport.get(j).setOutPunch(employeesPunchGridData.get(i).getTime());
 						}
 						
