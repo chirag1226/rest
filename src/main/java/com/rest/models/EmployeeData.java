@@ -62,7 +62,8 @@ public class EmployeeData {
 		this.time = time;
 		this.date = date;
 		this.punchSlot = punchSlot;
-	}
+		this.attendance = "";
+		}
 
 	public String getName() {
 		return name;
