@@ -251,7 +251,7 @@ public class AttendanceDaoImpl implements AttendanceDao {
 					
 					if(employeesPunchGridData.get(i).equals(employeesPunchGridData.get(j)) && employeesPunchGridData.get(j).getPunchSlot().equals("Punch Out")) {
 						obj.setDate(employeesPunchGridData.get(j).getDate());
-						obj.setInPunch(employeesPunchGridData.get(j).getTime());
+						obj.setOutPunch(employeesPunchGridData.get(j).getTime());
 					}
 				}
 				
