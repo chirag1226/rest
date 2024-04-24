@@ -406,7 +406,12 @@ public class AttendanceDaoImpl implements AttendanceDao {
 for(int i =0;i<employeesDataAbsentAttendance.size();i++) {
 	pdfGenerateReport obj = new pdfGenerateReport(employeesDataAbsentAttendance.get(i).getPbId(), employeesDataAbsentAttendance.get(i).getName(), employeesDataAbsentAttendance.get(i).getDesignation(), employeesDataAbsentAttendance.get(i).getDivision());
 	obj.setDate(employeesDataAbsentAttendance.get(i).getDate());
-	pdfReport.add(obj);
+	for(int j = 0;j< pdfReport.size();j++) {
+		if(pdfReport.get(i).equals(obj)) {
+			pdfReport.remove(pdfReport.get(i));
+		}
+	}
+
 }
 		
 
