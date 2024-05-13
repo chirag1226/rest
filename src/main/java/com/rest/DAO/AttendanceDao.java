@@ -2,6 +2,10 @@ package com.rest.DAO;
 
 import java.util.List;
 
+import com.rest.hr.models.HrEmployeeAttendanceData;
+import com.rest.hr.models.HrEmployeeDashBoardData;
+import com.rest.hr.models.HrEmployeeDataFilter;
+import com.rest.hr.models.HrFullEmployeeData;
 import com.rest.models.BarGraphData;
 import com.rest.models.Customfilter;
 import com.rest.models.Employee;
@@ -18,7 +22,7 @@ public interface AttendanceDao {
 
 	public FullDataRegistration saveEmployee(Employee emp);
 
-	public boolean savePunchIn(String reffId, String pbId);
+	public PunchModel savePunchIn(String reffId);
 
 	public List<Punch> getDataByDate(String date);
 
@@ -43,4 +47,12 @@ public interface AttendanceDao {
 	public List<ProgramCodes> getProgramCodes();
 
 	public List<EmployeeData> getAttendanceDataByFilter(Customfilter filter);
+
+	public HrEmployeeDashBoardData getHrEmployeeData(HrEmployeeDataFilter filter);
+
+	public boolean hrDivisionDataUpload(List<HrEmployeeAttendanceData> data);
+
+	public boolean updateHrEmployeeDashBoardHmaCanteenDays(HrEmployeeDataFilter data);
+
+	public HrEmployeeDashBoardData getHrAdminData(HrEmployeeDataFilter filter);
 }

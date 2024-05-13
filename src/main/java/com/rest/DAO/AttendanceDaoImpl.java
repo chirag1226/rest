@@ -9,7 +9,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 
 import org.hibernate.SQLQuery;
@@ -19,10 +18,14 @@ import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.rest.hr.models.HrEmployeeAttendanceData;
+import com.rest.hr.models.HrEmployeeAttendanceKey;
+import com.rest.hr.models.HrEmployeeDashBoardData;
+import com.rest.hr.models.HrEmployeeDataFilter;
+import com.rest.hr.models.HrFullEmployeeData;
 import com.rest.models.BarGraphData;
 import com.rest.models.Customfilter;
 import com.rest.models.Employee;
-import com.rest.models.EmployeeAttendanceData;
 import com.rest.models.EmployeeData;
 import com.rest.models.FullDataRegistration;
 import com.rest.models.FullUIDataObject;
@@ -40,49 +43,118 @@ public class AttendanceDaoImpl implements AttendanceDao {
 
 	@Autowired
 	SessionFactory sf;
+	
+public Employee getPunchEmployee(String reffId) {
+	Session session = sf.openSession();
+	try {
+
+		session.beginTransaction();
+	//get employee
+	
+	Query query = session.createQuery("from EMPLOYEE_ENTITY where is_valid = true and reff_id_reff_id = :c1");
+
+	query.setString("c1", reffId);
+
+	Employee emp1 = (Employee) query.getSingleResult();
+	
+	session.getTransaction().commit();
+
+	session.close();
+	
+	return emp1;
+	
+
+	}
+	catch(Exception ex) {
+		
+	}
+	
+	return null;
+}
 
 	// verified on 20/04/24
 	@Override
-	public boolean savePunchIn(String reffId, String pbId) {
+	public PunchModel savePunchIn(String reffId) {
+		
+		Employee emp1= this.getPunchEmployee(reffId);
 		Date date = new Date();
 		Session session = sf.openSession();
 		try {
 
 			session.beginTransaction();
+			
+			if (!emp1.equals(null) ) {
+				
+				
+				SimpleDateFormat localDateFormat = new SimpleDateFormat("HH:mm:ss");
+				String time = localDateFormat.format(date);
 
-			SimpleDateFormat localDateFormat = new SimpleDateFormat("HH:mm:ss");
-			String time = localDateFormat.format(date);
+				LocalTime firstLower = LocalTime.parse("07:30:00");
+				LocalTime firstUpper = LocalTime.parse("09:00:00");
+				LocalTime secondLower = LocalTime.parse("12:00:00");
+				LocalTime secondUpper = LocalTime.parse("13:30:00");
+				LocalTime thirdLower = LocalTime.parse("15:30:00");
+				LocalTime current = LocalTime.parse(time);
+				String punchSlot;
 
-			LocalTime firstLower = LocalTime.parse("07:30:00");
-			LocalTime firstUpper = LocalTime.parse("09:00:00");
-			LocalTime secondLower = LocalTime.parse("12:00:00");
-			LocalTime secondUpper = LocalTime.parse("13:30:00");
-			LocalTime thirdLower = LocalTime.parse("15:30:00");
-			LocalTime current = LocalTime.parse(time);
-			String punchSlot;
+				if (firstLower.compareTo(current) <= 0 && firstUpper.compareTo(current) >= 0) {
+					punchSlot = "Forenoon Punch In";
+				} else if (secondLower.compareTo(current) <= 0 && secondUpper.compareTo(current) >= 0) {
+					punchSlot = "Afternoon Punch In";
+				} else if (thirdLower.compareTo(current) <= 0) {
+					punchSlot = "Punch Out";
+				} else {
+					punchSlot = "Late Punch";
+				}
+				
+				String empPbId=emp1.getPbId();
 
-			if (firstLower.compareTo(current) <= 0 && firstUpper.compareTo(current) >= 0) {
-				punchSlot = "Forenoon Punch In";
-			} else if (secondLower.compareTo(current) <= 0 && secondUpper.compareTo(current) >= 0) {
-				punchSlot = "Afternoon Punch In";
-			} else if (thirdLower.compareTo(current) <= 0) {
-				punchSlot = "Punch Out";
+				session.save(new Punch_xref(new RfId(reffId), date, date, date, true, punchSlot,empPbId ));
+				
+				
+				StringBuilder sql = new StringBuilder();
+
+				sql.append("select * from punch_xref_table where valid = true and pb_id = '"+emp1.getPbId()+"' order by date desc, time desc");
+				List<EmployeeData> employeesPunchGridData = new ArrayList<>();
+				Query query = session.createSQLQuery(sql.toString());
+				List<Object[]> rows = query.list();
+				for (Object[] row : rows) {
+
+					EmployeeData emp = new EmployeeData(emp1.getName().toString(), emp1.getPbId(), null,
+							emp1.getDesignation(),emp1.getDivision(), emp1.getPhoneNo(), emp1.getProgramCode(), row[4].toString(),
+							row[1].toString(), row[3].toString());
+					employeesPunchGridData.add(emp);
+				}
+
+				session.getTransaction().commit();
+
+				session.close();
+				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy");
+				LocalDateTime now = LocalDateTime.now();
+				
+	
+					PunchModel obj = new PunchModel(true, emp1.getName() + " has punched at " + dtf.format(now),
+							emp1.getPbId());
+					obj.setPunchesGridData(employeesPunchGridData);
+					return obj;
+				 
+			
 			} else {
-				punchSlot = "Late Punch";
+				PunchModel err	= new PunchModel(false, "Please try again", "");
+				List<EmployeeData> employeesPunchGridData = new ArrayList<>();
+				err.setPunchesGridData(employeesPunchGridData);
+				return err; 
 			}
 
-			session.save(new Punch_xref(new RfId(reffId), date, date, date, true, punchSlot, pbId));
-
-			session.getTransaction().commit();
-
-			session.close();
-			return true;
 		} catch (Exception ex) {
 			session.getTransaction().rollback();
 		} finally {
 			session.close();
 		}
-		return false;
+		PunchModel err	= new PunchModel(false, "Please try again", "");
+		List<EmployeeData> employeesPunchGridData = new ArrayList<>();
+		err.setPunchesGridData(employeesPunchGridData);
+		return err; 
 	}
 
 	// verified on 20/04/24
@@ -479,41 +551,6 @@ public class AttendanceDaoImpl implements AttendanceDao {
 		return uiData;
 	}
 
-	// verified on 20/04/24
-	@Override
-	public PunchModel getPunchData(String filter) {
-		Session session = sf.openSession();
-
-		try {
-
-			session.beginTransaction();
-
-			Query query = session.createQuery("from EMPLOYEE_ENTITY where is_valid = true and reff_id_reff_id = :c1");
-
-			query.setString("c1", filter);
-
-			Employee emp = (Employee) query.getSingleResult();
-
-			session.getTransaction().commit();
-			session.close();
-			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy");
-			LocalDateTime now = LocalDateTime.now();
-			if (!emp.equals(null)) {
-				PunchModel obj = new PunchModel(true, emp.getName() + " has punched at " + dtf.format(now),
-						emp.getPbId());
-				return obj;
-			} else {
-				return new PunchModel(false, "Please try again", "");
-			}
-			// session.close();
-		} catch (Exception ex) {
-			session.getTransaction().rollback();
-			// exception catch
-		} finally {
-			session.close();
-		}
-		return null;
-	}
 
 	// verified on 20/04/24
 	@Override
@@ -911,6 +948,279 @@ public class AttendanceDaoImpl implements AttendanceDao {
 
 	@Override
 	public List<EmployeeData> getAttendanceDataByFilter(Customfilter filter) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public HrEmployeeDashBoardData getHrEmployeeData(HrEmployeeDataFilter filter) {
+		//dashBoard Data
+		HrEmployeeDashBoardData fullEmployeeDashBoardData  = new HrEmployeeDashBoardData();
+		//gridData
+		List<HrEmployeeAttendanceData> gridData = new ArrayList<>();
+		int sr=1;
+		StringBuilder sql =new StringBuilder();
+		sql.append("SELECT * FROM hr_employee_attendance_table where 1=1 ");
+
+		if (!filter.getStartDate().equals("")) {
+			sql.append(" and (start_date = '" + filter.getStartDate() + "' and end_date = '" + filter.getEndDate() + "')");
+		}
+
+			sql.append(" and pb_id = '" + filter.getPbId() + "'");
+				
+		
+		try {
+
+			Session session = sf.openSession();
+			session.beginTransaction();
+			SQLQuery query = session.createSQLQuery(sql.toString());
+			List<Object[]> rows = query.list();
+
+			query = session.createSQLQuery(sql.toString());
+			rows = query.list();
+			
+			
+			sql =new StringBuilder();
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			session.getTransaction().commit();
+			session.close();
+
+			//calcultate CL
+			int cl=0;
+			
+			//calculate LWP
+			int lwp=0;
+			
+			
+			for (Object[] row : rows) {
+				
+
+				
+				fullEmployeeDashBoardData.setPresentDays(row[7].toString());
+				fullEmployeeDashBoardData.setCanteenDays(row[12].toString());
+				fullEmployeeDashBoardData.setHmaDays(row[13].toString());
+				
+				HrEmployeeAttendanceData myData = new HrEmployeeAttendanceData();
+				myData.setId(sr);
+				
+				HrEmployeeAttendanceKey obj = new HrEmployeeAttendanceKey(row[1].toString(),row[0].toString());
+				
+				myData.setMyId(obj);
+				myData.setPbId(row[1].toString());
+				myData.setDatesLeaves(row[0].toString());
+				myData.setDesignation(row[2].toString());
+				myData.setDivision(row[3].toString());
+				myData.setEndDate(row[4].toString());	
+				myData.setName(row[5].toString());
+				//myData.setNoDaysLeave((Integer.toString(lwp+cl)));
+				myData.setNoDaysPresent(row[7].toString());
+				myData.setRemarks(row[8].toString());
+				myData.setStartDate(row[9].toString());
+				myData.setTypeOfLeaves(row[10].toString());
+				myData.setCanteenDays(row[12].toString());
+				myData.setHmaDays(row[13].toString());
+				
+				if(myData.getTypeOfLeaves().equals("CL")) {
+					cl++;
+				}
+				else if(myData.getTypeOfLeaves().equals("LWP"))
+				{
+					lwp++;
+				}
+
+				gridData.add(myData);
+
+				sr++;
+			}
+			
+
+			
+			
+			
+			fullEmployeeDashBoardData.setcL(Integer.toString(cl));
+			fullEmployeeDashBoardData.setlWP(Integer.toString(lwp));
+
+		
+		}
+		catch(Exception ex) {
+			
+		}
+		fullEmployeeDashBoardData.setData(gridData);
+		return fullEmployeeDashBoardData;
+	}
+
+	@Override
+	public boolean hrDivisionDataUpload(List<HrEmployeeAttendanceData> data) {
+		Session session = sf.openSession();
+		try {
+
+			session.beginTransaction();
+
+			for(HrEmployeeAttendanceData obj : data) {
+			    session.saveOrUpdate(obj);
+			}
+
+			session.getTransaction().commit();
+
+			session.close();
+			return true;
+		} catch (Exception ex) {
+			session.getTransaction().rollback();
+		} finally {
+			session.close();
+		}
+		return false;
+	}
+
+	@Override
+	public boolean updateHrEmployeeDashBoardHmaCanteenDays(HrEmployeeDataFilter data) {
+		HrEmployeeDashBoardData fullData = this.getHrEmployeeData(data);
+		
+		for (HrEmployeeAttendanceData row : fullData.getData()) {
+
+		row.setHmaDays(data.getHmaDays());
+		row.setCanteenDays(data.getCanteenDays());
+		}
+		
+		Session session = sf.openSession();
+		try {
+
+			session.beginTransaction();
+
+			for(HrEmployeeAttendanceData obj : fullData.getData()) {
+			    session.saveOrUpdate(obj);
+			}
+			
+			
+
+			session.getTransaction().commit();
+
+			session.close();
+			return true;
+		} catch (Exception ex) {
+			session.getTransaction().rollback();
+		} finally {
+			session.close();
+		}
+		return false;
+	}
+
+	@Override
+	public HrEmployeeDashBoardData getHrAdminData(HrEmployeeDataFilter filter) {
+		//dashBoard Data
+				HrEmployeeDashBoardData fullEmployeeDashBoardData  = new HrEmployeeDashBoardData();
+				//gridData
+				List<HrEmployeeAttendanceData> gridData = new ArrayList<>();
+				int sr=1;
+				StringBuilder sql =new StringBuilder();
+				sql.append("SELECT * FROM hr_employee_attendance_table where 1=1 ");
+
+				if (!filter.getStartDate().equals("")) {
+					sql.append(" and (start_date = '" + filter.getStartDate() + "' and end_date = '" + filter.getEndDate() + "')");
+				}
+
+				if (!filter.getPbId().equals("")) {
+					sql.append(" and pb_id = '" + filter.getPbId() + "'");
+				}		
+				
+				try {
+
+					Session session = sf.openSession();
+					session.beginTransaction();
+					SQLQuery query = session.createSQLQuery(sql.toString());
+					List<Object[]> rows = query.list();
+
+					query = session.createSQLQuery(sql.toString());
+					rows = query.list();
+					
+					
+					sql =new StringBuilder();
+					
+
+					
+					session.getTransaction().commit();
+					session.close();
+
+					//calcultate CL
+					int cl=0;
+					
+					//calculate LWP
+					int lwp=0;
+					
+					
+					for (Object[] row : rows) {
+						
+
+						
+						fullEmployeeDashBoardData.setPresentDays(row[7].toString());
+						fullEmployeeDashBoardData.setCanteenDays(row[12].toString());
+						fullEmployeeDashBoardData.setHmaDays(row[13].toString());
+						
+						HrEmployeeAttendanceData myData = new HrEmployeeAttendanceData();
+						myData.setId(sr);
+						
+						HrEmployeeAttendanceKey obj = new HrEmployeeAttendanceKey(row[1].toString(),row[0].toString());
+						
+						myData.setMyId(obj);
+						myData.setPbId(row[1].toString());
+						myData.setDatesLeaves(row[0].toString());
+						myData.setDesignation(row[2].toString());
+						myData.setDivision(row[3].toString());
+						myData.setEndDate(row[4].toString());	
+						myData.setName(row[5].toString());
+						//myData.setNoDaysLeave((Integer.toString(lwp+cl)));
+						myData.setNoDaysPresent(row[7].toString());
+						myData.setRemarks(row[8].toString());
+						myData.setStartDate(row[9].toString());
+						myData.setTypeOfLeaves(row[10].toString());
+						myData.setCanteenDays(row[12].toString());
+						myData.setHmaDays(row[13].toString());
+						
+						if(myData.getTypeOfLeaves().equals("CL")) {
+							cl++;
+						}
+						else if(myData.getTypeOfLeaves().equals("LWP"))
+						{
+							lwp++;
+						}
+
+						gridData.add(myData);
+
+						sr++;
+					}
+					
+
+					
+					
+					
+					fullEmployeeDashBoardData.setcL(Integer.toString(cl));
+					fullEmployeeDashBoardData.setlWP(Integer.toString(lwp));
+
+				
+				}
+				catch(Exception ex) {
+					
+				}
+				fullEmployeeDashBoardData.setData(gridData);
+				return fullEmployeeDashBoardData;
+	}
+
+	@Override
+	public PunchModel getPunchData(String filter) {
 		// TODO Auto-generated method stub
 		return null;
 	}

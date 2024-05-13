@@ -2,6 +2,9 @@ package com.rest.service;
 
 import java.util.List;
 
+import com.rest.hr.models.HrEmployeeAttendanceData;
+import com.rest.hr.models.HrEmployeeDashBoardData;
+import com.rest.hr.models.HrEmployeeDataFilter;
 import com.rest.models.BarGraphData;
 import com.rest.models.Customfilter;
 import com.rest.models.Employee;
@@ -16,7 +19,7 @@ import com.rest.models.SignUp;
 
 public interface AttendanceService {
 
-	public boolean savepunchIn(String reffId, String pbId);
+	public PunchModel savepunchIn(String reffId);
 
 	public FullDataRegistration saveEmployee(Employee emp);
 
@@ -43,5 +46,13 @@ public interface AttendanceService {
 	public List<ProgramCodes> getProgramCodes();
 
 	public List<EmployeeData> getAttendanceDataByFilter(Customfilter filter);
+
+	public HrEmployeeDashBoardData getHrEmployeeData(HrEmployeeDataFilter filter);
+
+	public boolean hrDivisionDataUpload(List<HrEmployeeAttendanceData> data);
+
+	public boolean updateHrEmployeeDashBoardHmaCanteenDays(HrEmployeeDataFilter data);
+
+	public HrEmployeeDashBoardData getHrAdminData(HrEmployeeDataFilter filter);
 
 }

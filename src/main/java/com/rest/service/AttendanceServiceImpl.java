@@ -6,6 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rest.DAO.AttendanceDao;
+import com.rest.hr.models.HrEmployeeAttendanceData;
+import com.rest.hr.models.HrEmployeeDashBoardData;
+import com.rest.hr.models.HrEmployeeDataFilter;
+import com.rest.hr.models.HrFullEmployeeData;
 import com.rest.models.BarGraphData;
 import com.rest.models.Customfilter;
 import com.rest.models.Employee;
@@ -31,9 +35,9 @@ public class AttendanceServiceImpl implements AttendanceService {
 	}
 
 	@Override
-	public boolean savepunchIn(String reffId, String pbId) {
+	public PunchModel savepunchIn(String reffId) {
 		// TODO Auto-generated method stub
-		return dao.savePunchIn(reffId, pbId);
+		return dao.savePunchIn(reffId);
 	}
 
 	@Override
@@ -106,6 +110,30 @@ public class AttendanceServiceImpl implements AttendanceService {
 	public List<EmployeeData> getAttendanceDataByFilter(Customfilter filter) {
 		// TODO Auto-generated method stub
 		return dao.getAttendanceDataByFilter(filter);
+	}
+
+	@Override
+	public HrEmployeeDashBoardData getHrEmployeeData(HrEmployeeDataFilter filter) {
+		// TODO Auto-generated method stub
+		return dao.getHrEmployeeData(filter);
+	}
+
+	@Override
+	public boolean hrDivisionDataUpload(List<HrEmployeeAttendanceData> data) {
+		// TODO Auto-generated method stub
+		return dao.hrDivisionDataUpload(data);
+	}
+
+	@Override
+	public boolean updateHrEmployeeDashBoardHmaCanteenDays(HrEmployeeDataFilter data) {
+		// TODO Auto-generated method stub
+		return dao.updateHrEmployeeDashBoardHmaCanteenDays(data);
+	}
+
+	@Override
+	public HrEmployeeDashBoardData getHrAdminData(HrEmployeeDataFilter filter) {
+		// TODO Auto-generated method stub
+		return dao.getHrAdminData(filter);
 	}
 
 }

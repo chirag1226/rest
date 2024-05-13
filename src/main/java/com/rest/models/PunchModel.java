@@ -1,10 +1,13 @@
 package com.rest.models;
 
+import java.util.List;
+
 public class PunchModel {
 
 	private boolean flag;
 	private String msg;
 	private String pbId;
+	private List<EmployeeData> punchesGridData;
 
 	public String getPbId() {
 		return pbId;
@@ -37,8 +40,13 @@ public class PunchModel {
 		this.msg = msg;
 	}
 
-	@Override
-	public String toString() {
-		return "PunchModel [flag=" + flag + ", msg=" + msg + "]";
+	public List<EmployeeData> getPunchesGridData() {
+		return punchesGridData;
 	}
+
+	public void setPunchesGridData(List<EmployeeData> punchesGridData) {
+		this.punchesGridData = punchesGridData;
+	}
+
+
 }

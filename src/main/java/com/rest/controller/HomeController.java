@@ -13,6 +13,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.rest.hr.models.HrEmployeeAttendanceData;
+import com.rest.hr.models.HrEmployeeDashBoardData;
+import com.rest.hr.models.HrEmployeeDataFilter;
+import com.rest.hr.models.HrFullEmployeeData;
+import com.rest.hr.models.HrLogin;
 import com.rest.models.BarGraphData;
 import com.rest.models.Customfilter;
 import com.rest.models.Employee;
@@ -54,12 +59,10 @@ public class HomeController {
 	@CrossOrigin(origins = "*")
 	@PostMapping("{reff_id}")
 	public PunchModel punchIn(@PathVariable String reff_id) {
-		PunchModel emp = service.getPunchData(reff_id);
-		if (emp != null && service.savepunchIn(reff_id, emp.getPbId())) {
-			return emp;
-		} else {
-			return new PunchModel(false, "Please try again", "");
-		}
+		//PunchModel emp = service.getPunchData(reff_id);
+		
+		return service.savepunchIn(reff_id);
+
 	}
 
 	@CrossOrigin(origins = "*")
@@ -186,5 +189,41 @@ public class HomeController {
 	{
 		return service.getAttendanceDataByFilter(filter);
 	}
+	
+	//HR
+	
+	@CrossOrigin(origins = "*")
+	@RequestMapping(value = "/hrLogin")
+	public boolean hrLogin() {
+		return true;
+	}
+	
+	
+	@CrossOrigin(origins = "*")
+	@PostMapping(value = "/getHrEmployeeDashBoardData")
+	public HrEmployeeDashBoardData getHrEmployeeDashBoardData(@RequestBody HrEmployeeDataFilter filter) {
+		if(filter.getLoginUserData().isValid() && (filter.getLoginUserData().getRole().equals("ADMIN")||filter.getLoginUserData().getRole().equals("EMP"))) {
+			return service.getHrEmployeeData(filter);
+		}
+
+		else
+			return null;
+	}
+	
+	@CrossOrigin(origins = "*")
+	@PostMapping(value = "/hrDivisionDataUpload")
+	public boolean hrDivisionDataUpload(@RequestBody List<HrEmployeeAttendanceData> data) {
+		System.out.println(data);
+		return service.hrDivisionDataUpload(data);
+	}
+	
+	@CrossOrigin(origins = "*")
+	@PostMapping(value = "/updateHrEmployeeDashBoardHmaCanteenDays")
+	public boolean updateHrEmployeeDashBoardHmaCanteenDays(@RequestBody HrEmployeeDataFilter data) {
+		return service.updateHrEmployeeDashBoardHmaCanteenDays(data);
+	}
+	
+	
+	
 
 }
